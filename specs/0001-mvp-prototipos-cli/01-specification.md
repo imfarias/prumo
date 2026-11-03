@@ -246,6 +246,7 @@ Não há perfis no Prumo. A CLI lê a pasta de especificações e escreve apenas
 | `identidade.design_system` | `proprio` \| `govbr` | Não | `proprio` | `govbr` nesta fase → aviso e uso de `proprio` |
 | `identidade.cores.*` | `#RRGGBB` | Não | paleta neutra | hex válido; contraste texto/fundo ≥ 4,5:1 (aviso) |
 | `identidade.fontes.titulo/texto` | nome | Não | fonte do sistema | fontes embutidas disponíveis: Jost, Atkinson Hyperlegible; outras → aviso e fallback |
+| `identidade.css_adicional` | caminho relativo às specs | Não | nenhum | arquivo existe; incluído depois do CSS do kit (permite usar o `vc.css` do piloto sem versioná-lo no Prumo) |
 | `largura_captura` | inteiro | Não | 1440 | 320–3840 |
 | `cascas.publica/autenticada` | objeto | Não | ver pedido | — |
 | `perfis` | mapa perfil → itens de menu | Não | vazio | — |
@@ -334,8 +335,8 @@ Chaves e listas em ordem estável; sem data/hora no arquivo.
 
 | # | Dúvida | Impacto | Proposta padrão se não houver resposta |
 |---|---|---|---|
-| D-01 | O gerador Python (`comum.py`, `vc.css`, `renderizar.mjs`) não existe em nenhuma branch do `portal-vale-cultura` nem nesta máquina. Onde está? | Médio: reaproveitar o CSS e os componentes aproxima o resultado dos PNGs atuais | Recriar o visual a partir do `DESIGN.md` e dos 42 PNGs |
-| D-02 | Onde fica o `projeto.yml` do piloto (com os tokens Cobalto)? | Baixo | Num MR no `novo-vale-cultura-documentacao`, ao lado do `config.properties`, após o MVP; durante o desenvolvimento, só local |
+| D-01 | ~~Onde está o gerador Python?~~ Resolvida: `portal-vale-cultura/doc/Prototipos` no WSL (não versionado) | — | Usar `vc.css`, os 41 HTMLs e os PNGs como referência; o `vc.css` entra pelo `identidade.css_adicional`, só localmente |
+| D-02 | ~~Onde fica o `projeto.yml` do piloto?~~ Resolvida: no WSL, junto de `portal-vale-cultura/doc/Especificações` | — | — |
 | D-03 | A verificação deve tratar como erro um link cujo rótulo diverge do destino (RN-32)? Pode haver muitos no Vale-Cultura | Baixo | Erro, com `--avisos-quebram` independente |
 | D-04 | Rawline (fonte do gov.br) não está no npm; precisa vir do pacote do gov.br DS ou ser embutida manualmente | Só fase 4 | Resolver na 0004 |
 | D-05 | Política de branches no GitHub: "um MR da mesma branch para cada ambiente" — o Prumo só tem `main`. Basta um PR para `main`? | Baixo | Um PR para `main` com título igual ao nome da branch |
