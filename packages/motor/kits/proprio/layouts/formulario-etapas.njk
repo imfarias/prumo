@@ -1,0 +1,16 @@
+{% extends cascaTemplate %}
+{% import "macros.njk" as m %}
+{% block conteudo %}
+{% if secoes.length %}
+<ol class="etapas" aria-label="Etapas" data-testid="{{ tela.testid }}-etapas">
+{% for s in secoes %}<li{% if loop.first %} aria-current="step" class="atual"{% endif %}><span class="marca-etapa" aria-hidden="true">{{ loop.index }}</span>{{ s.titulo }}</li>{% endfor %}
+</ol>
+{% endif %}
+<form novalidate data-testid="{{ tela.testid }}-formulario" aria-label="{{ tela.titulo }}">
+{% for s in secoes %}
+<fieldset class="secao" data-testid="{{ tela.testid }}-secao-{{ s.id }}"><legend>{{ loop.index }}. {{ s.titulo }}</legend>{{ m.grade(s.campos) }}</fieldset>
+{% endfor %}
+{% if semSecao.length %}{{ m.grade(semSecao) }}{% endif %}
+{{ m.acoes(acoes, tela.testid) }}
+</form>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends cascaTemplate %}
+{% import "macros.njk" as m %}
+{% block conteudo %}
+{% if leitura.length %}
+<dl class="dados" data-testid="{{ tela.testid }}-dados">
+{% for d in leitura %}<div><dt id="{{ d.id }}-rotulo">{{ d.rotulo }}</dt><dd aria-labelledby="{{ d.id }}-rotulo" data-testid="{{ d.testid }}">{{ d.valor }}</dd></div>{% endfor %}
+</dl>
+{% endif %}
+{% if semSecao.length %}{{ m.grade(semSecao) }}{% endif %}
+{% if tabela.colunas.length %}
+{% if tabela.linhas.length %}
+<p class="resumo"><span><b>{{ tabela.linhas.length }}</b> registros</span></p>
+{{ m.tabela(tabela, tela.testid) }}
+{% else %}
+<div class="vazio" role="status" data-testid="{{ tela.testid }}-vazio">{{ vazioTexto }}</div>
+{% endif %}
+{% endif %}
+{% for d in dados %}<h2>{{ d.legenda }}</h2>{{ m.tabela(d, tela.testid + "-" + d.id) }}{% endfor %}
+{{ m.acoes(acoes, tela.testid) }}
+{% endblock %}

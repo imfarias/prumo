@@ -1,0 +1,8 @@
+<nav class="migalha" aria-label="Migalha" data-testid="casca-migalha">
+  <ol>{% for m in migalha %}<li>{% if m.href %}<a href="{{ m.href }}">{{ m.rotulo }}</a>{% else %}<span aria-current="page">{{ m.rotulo }}</span>{% endif %}</li>{% endfor %}</ol>
+</nav>
+<div class="cabeca">
+  <div><h1>{{ tela.titulo }}</h1>{% if tela.descricao %}<p class="meta">{{ tela.descricao }}</p>{% endif %}</div>
+</div>
+{% import "macros.njk" as m %}
+{{ m.mensagem(estado, tela) }}

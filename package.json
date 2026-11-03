@@ -2,8 +2,13 @@
   "name": "prumo-monorepo",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/*", "apps/cli"],
-  "engines": { "node": ">=22.12.0" },
+  "workspaces": [
+    "packages/*",
+    "apps/cli"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "test": "vitest run",
@@ -11,7 +16,11 @@
     "prumo": "tsx apps/cli/src/main.ts"
   },
   "devDependencies": {
+    "@types/markdown-it": "14.2.0",
     "@types/node": "22.20.5",
+    "@types/nunjucks": "3.2.6",
+    "@types/pngjs": "6.0.5",
+    "@vitest/coverage-v8": "5.1.0",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
     "vitest": "5.1.0"

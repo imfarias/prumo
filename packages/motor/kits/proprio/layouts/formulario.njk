@@ -1,0 +1,12 @@
+{% extends cascaTemplate %}
+{% import "macros.njk" as m %}
+{% block conteudo %}
+<form novalidate data-testid="{{ tela.testid }}-formulario" aria-label="{{ tela.titulo }}">
+{% for s in secoes %}
+<fieldset class="secao" data-testid="{{ tela.testid }}-secao-{{ s.id }}"><legend>{{ s.titulo }}</legend>{{ m.grade(s.campos) }}</fieldset>
+{% endfor %}
+{% if semSecao.length %}{{ m.grade(semSecao) }}{% endif %}
+{% for d in dados %}<h2>{{ d.legenda }}</h2>{{ m.tabela(d, tela.testid + "-" + d.id) }}{% endfor %}
+{{ m.acoes(acoes, tela.testid) }}
+</form>
+{% endblock %}

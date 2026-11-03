@@ -1,0 +1,17 @@
+{% extends cascaTemplate %}
+{% import "macros.njk" as m %}
+{% block conteudo %}
+{% if api %}
+<p class="api-rota" data-testid="{{ tela.testid }}-rota"><span class="metodo">{{ api.metodo }}</span><code>{{ api.caminho }}</code></p>
+{% endif %}
+{% if api.parametros.length %}
+<h2>Parâmetros</h2>
+{{ m.tabela(api.tabelaParametros, tela.testid + "-parametros") }}
+{% endif %}
+{% for r in api.respostas %}
+<section aria-labelledby="{{ tela.testid }}-resposta-{{ loop.index }}">
+<h2 id="{{ tela.testid }}-resposta-{{ loop.index }}">{{ r.titulo }}</h2>
+<pre class="json" tabindex="0" data-testid="{{ tela.testid }}-resposta-{{ loop.index }}">{{ r.json }}</pre>
+</section>
+{% endfor %}
+{% endblock %}

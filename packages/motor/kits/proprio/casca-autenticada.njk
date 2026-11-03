@@ -1,0 +1,22 @@
+{% extends "base.njk" %}
+{% block corpo %}
+<div class="casca">
+<aside class="trilho">
+  <a class="marca" href="{{ inicio }}">{% if projeto.logo %}<img src="{{ recursos }}/{{ projeto.logo }}" alt="">{% endif %}<span>{{ projeto.nome }}{% if projeto.orgao %}<small>{{ projeto.orgao }}</small>{% endif %}</span></a>
+  {% if casca.menu.length %}
+  <nav aria-label="Menu do perfil" data-testid="casca-menu">
+    {% for item in casca.menu %}<a href="{{ item.href }}"{% if item.atual %} aria-current="page"{% endif %}>{{ item.rotulo }}</a>{% endfor %}
+  </nav>
+  {% endif %}
+  <div class="conta" data-testid="casca-conta">
+    <b>{{ casca.usuario.nome }}</b>{{ casca.usuario.perfil }}
+    {% for c in casca.conta %}<a href="#">{{ c }}</a>{% endfor %}
+  </div>
+</aside>
+<main id="conteudo" class="trabalho" data-testid="{{ tela.testid }}-conteudo">
+{% include "topo-tela.njk" %}
+{% block conteudo %}{% endblock %}
+<footer class="rodape-trabalho">{{ projeto.nome }}{% if projeto.orgao %} · {{ projeto.orgao }}{% endif %} · versão {{ projeto.versao }}</footer>
+</main>
+</div>
+{% endblock %}

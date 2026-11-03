@@ -1,0 +1,18 @@
+{% extends cascaTemplate %}
+{% import "macros.njk" as m %}
+{% block conteudo %}
+{% if filtros.length %}
+<form class="filtros" role="search" aria-label="Filtros" data-testid="{{ tela.testid }}-filtros">
+  {{ m.grade(filtros) }}
+  {{ m.acoes(acoesFiltro, tela.testid + "-filtro") }}
+</form>
+{% endif %}
+{% if tabela.linhas.length %}
+<p class="resumo" data-testid="{{ tela.testid }}-resumo"><span><b>{{ paginacao.total }}</b> registros encontrados</span></p>
+{{ m.tabela(tabela, tela.testid) }}
+{{ m.paginacao(paginacao, tela.testid) }}
+{% else %}
+<div class="vazio" role="status" data-testid="{{ tela.testid }}-vazio">{{ vazioTexto }}</div>
+{% endif %}
+{{ m.acoes(acoes, tela.testid) }}
+{% endblock %}
