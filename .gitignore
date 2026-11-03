@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+saida/
+*.log
+.DS_Store
+# material de projetos reais nunca entra neste repositório público
+/projetos-locais/
+*.tsbuildinfo

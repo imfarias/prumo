@@ -1,0 +1,12 @@
+{
+  "name": "@prumo/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "bin": { "prumo": "dist/main.js" },
+  "scripts": { "build": "tsc -b" },
+  "dependencies": {
+    "@prumo/motor": "0.1.0",
+    "commander": "15.0.0"
+  }
+}
