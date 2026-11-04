@@ -13,6 +13,9 @@
 - [2026-11-03] [Arquiteto] Instaladores só Windows e Linux — Motivo: resposta do usuário.
 - [2026-11-03] [Arquiteto] Repositório público no GitHub (`imfarias/prumo`); material do Vale-Cultura fica fora do repositório — Motivo: resposta do usuário; especificações do MinC não são publicadas.
 
+- [2026-11-04] [Requisito] O Prumo é projeto pessoal do usuário; o Vale-Cultura (MinC) é só o piloto. Infraestrutura, assinatura e atualização são do próprio Prumo (GitHub).
+- [2026-11-04] [Requisito] Programa (0003): atualização pelas releases do GitHub, ligada por padrão (1×/dia, desligável, baixa só com o clique); sem certificado de assinatura por enquanto; `.exe` por usuário, `.msi` por máquina.
+
 ## Padrões Estabelecidos
 - [2026-11-03] [Arquiteto] Link de cenário do Pirilampo: `#/scenario/{Pasta}_{Arquivo}/{n}`, com `n` = posição **0-based** entre todos os filhos da Funcionalidade (Contexto, Cenário, Esquema), na ordem do arquivo. Com Contexto, o 1º cenário é 1 (RNG-01 → /1, LOV-06 → /53); sem Contexto, o 1º cenário é 0 (em Mensagens de Interface, "Mensagem de Interface" → /0 e MSG-01 → /1). Conferido na saída do Pirilampo (`data-target="#scenario-N"`).
 - [2026-11-03] [Arquiteto] Link de funcionalidade: `#!/feature/{Pasta}_{Arquivo sem .feature}`.

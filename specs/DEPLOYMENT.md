@@ -13,24 +13,24 @@ projeto de requisitos. Seções do modelo que não se aplicam estão marcadas.
 ```
 GitHub (imfarias/prumo) ──tag v*──▶ GitHub Actions ─┬─▶ ghcr.io/imfarias/prumo:<versão>  (Docker)
                                                     └─▶ Release: .exe, .msi, .deb, .AppImage
-Rede do MinC: cópia dos instaladores e do latest.json no GitLab/Nexus interno ──▶ aviso de atualização no programa
-Jenkins do MinC: docker run ghcr.io/imfarias/prumo verificar|gerar|docs  (pasta de documentação como volume)
+Programa instalado ──consulta diária──▶ releases do GitHub (aviso de atualização; baixa só com o clique)
+CI de quem usa o Prumo (ex.: Jenkins): docker run ghcr.io/imfarias/prumo verificar|gerar|docs  (pasta como volume)
 ```
 
 ## 2. Infraestrutura
-- Provedor: GitHub (código, Actions, GHCR, Releases). Espelho interno opcional no GitLab/Nexus do MinC.
+- Provedor: GitHub (código, Actions, GHCR, Releases).
 - Orquestração, banco, cache, fila, DNS/TLS, WAF/CDN: não se aplica.
 
 ## 3. Pré-requisitos para Primeiro Deploy
 - [ ] Repositório `imfarias/prumo` com Actions habilitado e permissão `packages: write`
-- [ ] (Opcional) Certificado de assinatura de código do MinC, como secret `WIN_CSC_LINK`/`WIN_CSC_KEY_PASSWORD`
-- [ ] (Opcional) Endereço interno para `latest.json` de atualização definido com a TI
+- [ ] (Opcional) Certificado de assinatura de código, como secret `WIN_CSC_LINK`/`WIN_CSC_KEY_PASSWORD`
 
 ## 4. Variáveis de Ambiente
 | Variável | Obrigatória | Onde está armazenada | Observações |
 |---|---|---|---|
 | `PRUMO_CHROMIUM` | Não | Ambiente local/CI | Caminho de um Chromium; sem ela, procura Chrome/Edge instalados |
-| `PRUMO_ATUALIZACAO_URL` | Não | Configuração do programa | Sobrepõe `atualizacao.url` |
+| `PRUMO_ATUALIZACAO_URL` | Não | Ambiente | Outro repositório ou `latest.json` próprio para o aviso de atualização |
+| `PRUMO_ATUALIZACAO` | Não | Ambiente | `desligada` desliga a verificação de atualização |
 | `WIN_CSC_LINK`, `WIN_CSC_KEY_PASSWORD` | Não | Secrets do GitHub | Assinatura do instalador Windows |
 | `GITHUB_TOKEN` | Sim (CI) | Automático no Actions | Publicar imagem e release |
 
@@ -50,7 +50,6 @@ Jenkins do MinC: docker run ghcr.io/imfarias/prumo verificar|gerar|docs  (pasta 
 1. Atualizar `CHANGELOG.md` e versão nos `package.json`.
 2. Criar a tag `vX.Y.Z` em `main` e enviar.
 3. Conferir a release com os quatro instaladores e a imagem no GHCR.
-4. Copiar instaladores e `latest.json` para o endereço interno do MinC, se usado.
 
 Fallback manual: `npm ci && npm run build && npm run dist -w apps/desktop` na máquina do sistema-alvo; `docker build -f docker/Dockerfile .`.
 
