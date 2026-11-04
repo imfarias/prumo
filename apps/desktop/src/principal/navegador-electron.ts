@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { BrowserWindow, session } from 'electron';
-import { arquivoAxe, type Navegador, type ResultadoAxe } from '@prumo/motor';
+import { arquivoAxe, SCRIPT_ESTABILIZAR, type Navegador, type ResultadoAxe } from '@prumo/motor';
 
 /**
  * Porta Navegador com o Chromium do Electron (RN-71). Janela fora da tela (`offscreen`) porque janela oculta
@@ -57,7 +57,7 @@ export class NavegadorElectron implements Navegador {
   private async carregar(j: BrowserWindow, url: string, largura: number, altura = 900) {
     j.setContentSize(largura, altura);
     await j.loadURL(url);
-    await j.webContents.executeJavaScript('document.fonts.ready.then(() => true)');
+    await j.webContents.executeJavaScript(SCRIPT_ESTABILIZAR);
   }
 
   async capturar(url: string, o: { largura: number; altura?: number }): Promise<Buffer> {

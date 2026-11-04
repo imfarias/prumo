@@ -17,6 +17,7 @@ export { formatarJson, formatarTexto, resumo } from './verificacao/formatar.js';
 export { gerarPrototipos, type PaginaGerada, type Recorte } from './render/gerar.js';
 export { capturar, type ResultadoCaptura } from './navegador/capturar.js';
 export type { Navegador, ResultadoAxe } from './navegador/navegador.js';
+export { SCRIPT_ESTABILIZAR } from './navegador/navegador.js';
 export { NavegadorPlaywright, MENSAGEM_SEM_NAVEGADOR } from './navegador/playwright.js';
 export { compararPng, type ItemComparacao } from './comparacao/png.js';
 export { compararComAtuais, gerar, gerarECapturar, preparar, verificarPreparado, type Preparado } from './executar.js';

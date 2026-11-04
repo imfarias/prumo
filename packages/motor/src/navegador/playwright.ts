@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import type { Browser, BrowserContext } from 'playwright-core';
 import { arquivoAxe } from '../util/recursos.js';
 import { ErroPrumo } from '../util/erros.js';
-import type { Navegador, ResultadoAxe } from './navegador.js';
+import { SCRIPT_ESTABILIZAR, type Navegador, type ResultadoAxe } from './navegador.js';
 
 export const MENSAGEM_SEM_NAVEGADOR =
   'Nenhum Chrome, Edge ou Chromium encontrado. Instale o Edge ou o Chrome, defina PRUMO_CHROMIUM com o caminho do executável, ou rode pela imagem Docker.';
@@ -56,7 +56,7 @@ export class NavegadorPlaywright implements Navegador {
     await p.setViewportSize({ width: o.largura, height: o.altura ?? 900 });
     try {
       await p.goto(url, { waitUntil: 'load' });
-      await p.evaluate(() => document.fonts.ready.then(() => undefined));
+      await p.evaluate(SCRIPT_ESTABILIZAR);
       return await p.screenshot({ fullPage: true, animations: 'disabled', caret: 'hide' });
     } finally {
       await p.close();
@@ -85,7 +85,7 @@ export class NavegadorPlaywright implements Navegador {
     const p = await this.contexto.newPage();
     try {
       await p.goto(url, { waitUntil: 'load' });
-      await p.evaluate(() => document.fonts.ready.then(() => undefined));
+      await p.evaluate(SCRIPT_ESTABILIZAR);
       return await p.pdf({
         format: 'A4',
         landscape: !!o.paisagem,
