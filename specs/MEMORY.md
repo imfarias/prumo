@@ -3,7 +3,8 @@
 ## Stack atual
 - TypeScript 7.0.2 sobre Node.js ≥ 22.12, ESM, monorepo npm workspaces
 - Motor: @cucumber/gherkin 42.0.1, yaml 2.9.1, nunjucks 3.2.4, markdown-it 15.0.3
-- Navegador: playwright-core 1.64.1 (CLI/Docker) e Electron 45.2.1 (desktop)
+- Navegador: playwright-core 1.64.1 (CLI/Docker) e Electron 45.2.2 (desktop)
+- Programa: Preact 11.1.1 + @preact/signals 2.11.4, esbuild 0.28.2, electron-builder 26.18.0
 - Testes: vitest 5.1.0, axe-core 4.14.0
 
 ## Decisões Arquiteturais
@@ -29,6 +30,7 @@
 
 - [2026-11-04] [Líder] Captura no Electron: janela oculta não gera quadros (fontes e captura travam, mesmo com `backgroundThrottling: false`). Usar `offscreen: true` + `setContentSize(largura, scrollHeight)` + `capturePage()` (igual ao Playwright; páginas de 28 mil px funcionam).
 - [2026-11-04] [Líder] Programa: motor no processo principal (fila + AbortSignal), não em `utilityProcess` (que não tem BrowserWindow para captura e PDF).
+- [2026-11-04] [Dev] Programa: o principal guarda os eventos até a janela chamar `janela:pronta`; enviados antes de os ouvintes existirem, eles se perdem (aviso de atualização, pasta do "Abrir com o Prumo").
 
 ## Problemas Recorrentes & Soluções
 - [2026-11-04] [Dev] Docker: `*.tsbuildinfo` locais no contexto fazem o `tsc -b` pular a compilação → `.dockerignore` com `**/*.tsbuildinfo`.
@@ -40,6 +42,10 @@
 - [2026-11-04] [Dev] No Windows, `os.tmpdir()` pode vir com nome curto (8.3): caminho relativo ao repositório Git só pelo próprio Git (`rev-parse --show-prefix`).
 - [2026-11-04] [Tester] Grade CSS com conteúdo largo no celular: `minmax(0, 1fr)`, nunca `1fr`.
 - [2026-11-04] [Dev] Nunjucks não tem `selectattr` com comparação; contagens vêm prontas do TS.
+- [2026-11-04] [Dev] Electron com `main` ESM: `await app.whenReady()` no nível do módulo trava para sempre (o `ready` só sai depois do script principal terminar) → `app.whenReady().then(...)`.
+- [2026-11-04] [Dev] Electron encerra quando a última janela fecha; em roteiros sem janela principal (`--verificar-instalacao`, testes), as janelas fora da tela do `NavegadorElectron` fechando derrubam o app antes do resultado → tratar `window-all-closed`.
+- [2026-11-04] [Tester] E2E: esperar a mensagem *mudar* antes de casar o texto; a mensagem anterior pode casar com a mesma regex e o próximo clique sai com a tarefa ainda rodando.
+- [2026-11-04] [Dev] Heredoc do bash nesta máquina perde barras invertidas em código (duas viram uma, ou nenhuma): escrever código com a ferramenta de arquivo ou montar com `String.fromCharCode(92)`.
 - [2026-11-04] [Dev] As ferramentas de escrita convertem sequências de escape (barra + u, barra + n) em caracteres reais: em código, prefira `String.fromCharCode(...)` e `[...].join(...)`.
 
 ## Pontos de Atenção
@@ -58,6 +64,9 @@
 - [2026-11-04] [Usuário] Caixas de mensagem (`.aviso`) mantêm a borda lateral colorida; decisão do usuário.
 
 - [2026-11-04] [Requisito] O Pirilampo atual: rotas `#!/feature/:feature/:search*?` e `#/scenario/:feature/:id`; link de cenário abre a regra numa janela com "Acessar Feature"; busca typeahead por frases; protótipo `.html` em iframe (`#!/html/…`); comparação com `master` (ícones NEW/DIFFERENT no menu). A 0002 preserva todos, inclusive a comparação (o usuário usa; trazida da 0004 para a 0002 em 2026-11-04). Saída no mesmo caminho do Pirilampo (`html/index.html`) e prévia de regra em janela, confirmados pelo usuário.
+
+- [2026-11-04] [Líder] Ubuntu 24 restringe *user namespaces*: Electron no CI precisa de `sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0` (e `xvfb-run`); o `.AppImage` roda com `--no-sandbox`.
+- [2026-11-04] [Líder] Instaladores sem assinatura: SmartScreen avisa no Windows (README explica). Secrets `WIN_CSC_LINK`/`WIN_CSC_KEY_PASSWORD` quando houver certificado.
 
 - [2026-11-04] [Líder] A documentação do piloto ainda não foi gerada no `html/` do Vale-Cultura: trocar o `index.html` do Pirilampo depende do usuário.
 

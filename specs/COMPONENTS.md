@@ -46,12 +46,32 @@
 | `gerarDocumentacao`, `prepararDocumentacao` | `docs/gerar.ts` | Site em pasta ou arquivo único | `(specs, OpcoesDocs)` |
 | `gerarPdf`, `paginasDosDestinos` | `docs/pdf.ts` | PDF com sumário numerado; páginas dos destinos nomeados | `(specs, OpcoesPdf)` |
 | `servir` | `docs/servir.ts` | Servidor local com recarga | `(specs, {porta})` |
+| `andar`, `verificarCancelamento`, `OpcoesExecucao` | `util/execucao.ts` | Andamento e cancelamento das tarefas longas (`ErroPrumo('CANCELADO')`) | `{sinal?, aoAndamento?}` |
+| `diretorioKits`, `arquivoFonte`, `arquivoAxe` | `util/recursos.ts` | Recursos do motor pelo pacote ou por `PRUMO_RECURSOS` | — |
+| `editarYaml` | `config/editar.ts` | Muda chaves do YAML mantendo comentários, ordem e estilo das linhas não tocadas | `(texto, mudancas) → {texto, alteradas}` |
+| `criarProjetoNovo` | `config/novo.ts` | Estrutura mínima que passa na verificação | `(pasta, {nome, versao, orgao?})` |
+| `marcarPng`, `pngDoPrumo` | `navegador/marca-png.ts` | Marca `Software=Prumo` no PNG (tEXt) para saber o que pode ser sobrescrito sem perguntar | `(png) → png`, `(png) → boolean` |
 
 ## Adaptadores
 | Nome | Caminho | Propósito |
 |---|---|---|
 | `Navegador` (porta) | `navegador/navegador.ts` | Capturar, axe, PDF, bloqueio de rede |
-| `NavegadorPlaywright` | `navegador/playwright.ts` | `PRUMO_CHROMIUM` → Edge → Chrome |
+| `NavegadorPlaywright` | `navegador/playwright.ts` | `PRUMO_CHROMIUM` → Edge → Chrome (CLI e Docker) |
+| `NavegadorElectron` | `apps/desktop/src/principal/navegador-electron.ts` | Chromium do Electron em janelas fora da tela; captura, PDF, axe, bloqueio de rede (programa) |
+
+## Programa de computador (`apps/desktop/src/`)
+| Nome | Caminho | Propósito |
+|---|---|---|
+| `CANAIS`, `validar`, `EVENTOS` | `comum/canais.ts` | Lista fechada de canais janela ↔ principal, com validação da forma dos dados |
+| `Servicos` | `principal/servicos.ts` | Projeto aberto, configuração, protótipos e a fila de tarefas (uma por vez, cancelável) |
+| `ArmazemPreferencias` | `principal/preferencias.ts` | Preferências e recentes em `userData`, gravação atômica |
+| `Atualizador` | `principal/atualizacao.ts` | Releases do GitHub + `SHA256SUMS.txt`; nunca instala sozinho |
+| `comandoDoEditor`, `rodar` | `principal/editor.ts` | Abrir arquivo:linha no VS Code, em outro editor ou no aplicativo padrão |
+| `definirMenuContexto` | `principal/menu-contexto.ts` | "Abrir com o Prumo" em HKCU pelo `reg.exe` (instalação pelo `.msi`) |
+| `registrarRaiz`, `urlDe` | `principal/protocolo.ts` | `prumo-arquivo://` servindo só as pastas registradas |
+| `blindar`, `PREFERENCIAS_WEB` | `principal/seguranca.ts` | CSP, sandbox, navegação e permissões negadas |
+| `PreviaAoVivo` | `principal/previa.ts` | Vigia o projeto e regenera verificação e protótipos |
+| `rodarTarefa`, `ocupado`, `invocar` | `janela/estado.ts` | Tarefa longa com andamento, confirmação de sobrescrita e botões desativados enquanto roda |
 
 ## Testes
 | Nome | Caminho | Propósito |
@@ -60,3 +80,6 @@
 | `fabricaFeature` | `packages/motor/test/fabricas/feature.ts` | Feature no padrão Pirilampo para casos plantados |
 | `criarRepositorio`, `aplicarMudancas` | `packages/motor/test/fabricas/repositorio-git.ts` | Repositório Git com duas versões (nova, alterada, removida, renomeada) |
 | `criarEspecificacaoGrande` | `packages/motor/test/fabricas/especificacao-grande.ts` | Especificação 5× o piloto para medir a busca |
+| `abrirPrograma` | `apps/desktop/test/fabricas/programa.ts` | Programa (dist/) com o exemplo copiado, `userData` próprio, diálogos com respostas fixas e axe |
+| `servirRelease` | `apps/desktop/test/fabricas/release.ts` | Release falsa do GitHub em 127.0.0.1 (SHA certo ou errado, sem somas, HTTP de erro) |
+| `editor-falso.mjs` | `apps/desktop/test/fabricas/` | Editor que grava `arquivo:linha` para o teste do achado |
