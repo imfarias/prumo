@@ -8,6 +8,7 @@ import { dentroDe } from '../util/caminhos.js';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import type { Navegador } from './navegador.js';
+import { marcarPng } from './marca-png.js';
 import { andar, type OpcoesExecucao } from '../util/execucao.js';
 
 export interface ResultadoCaptura {
@@ -44,7 +45,7 @@ export async function capturar(
       const p = alvos[i]!;
       andar(o, `Capturando: ${p.tela}`, i, alvos.length);
       const destino = dentroDe(o.specs, p.destinoPng!);
-      const png = await navegador.capturar(pathToFileURL(p.arquivo).href, { largura: o.largura });
+      const png = marcarPng(await navegador.capturar(pathToFileURL(p.arquivo).href, { largura: o.largura }));
       let situacao: ResultadoCaptura['situacao'] = 'gravado';
       if (!o.forcar && existsSync(destino) && mesmaImagem(await readFile(destino), png)) situacao = 'sem-mudanca';
       else await gravarSeMudou(destino, png);

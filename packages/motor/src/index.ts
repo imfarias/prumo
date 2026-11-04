@@ -31,4 +31,5 @@ export type * from './docs/tipos.js';
 export { editarYaml, type Mudanca, type LinhaDiff, type Caminho } from './config/editar.js';
 export { criarProjetoNovo } from './config/novo.js';
 export { andar, verificarCancelamento, type Andamento, type OpcoesExecucao } from './util/execucao.js';
-export { diretorioKits, raizRecursos } from './util/recursos.js';
+export { arquivoAxe, diretorioKits, raizRecursos } from './util/recursos.js';
+export { marcarPng, pngDoPrumo } from './navegador/marca-png.js';

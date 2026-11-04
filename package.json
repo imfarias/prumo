@@ -4,7 +4,8 @@
   "type": "module",
   "workspaces": [
     "packages/*",
-    "apps/cli"
+    "apps/cli",
+    "apps/desktop"
   ],
   "engines": {
     "node": ">=22.12.0"
