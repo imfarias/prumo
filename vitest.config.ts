@@ -6,6 +6,9 @@ export default defineConfig({
   test: {
     include: ['packages/*/test/**/*.test.ts', 'apps/*/test/**/*.test.ts'],
     testTimeout: 30_000,
+    // CI Linux (2 núcleos, sem GPU): vários Chromium e Electron ao mesmo tempo fazem a renderização variar
+    // entre capturas; lá os arquivos rodam um de cada vez.
+    fileParallelism: !(process.env.CI && process.platform === 'linux'),
     coverage: {
       provider: 'v8',
       include: ['packages/motor/src/**/*.ts', ...PRINCIPAL_SEM_ELECTRON],
