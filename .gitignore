@@ -7,3 +7,4 @@ saida/
 # material de projetos reais nunca entra neste repositório público
 /projetos-locais/
 *.tsbuildinfo
+*.tmp.*

@@ -1,0 +1,38 @@
+# Projeto fictício usado nos testes e na demonstração do Prumo.
+projeto:
+  nome: Programa Exemplo
+  versao: "1.0"
+  orgao: Órgão Exemplo
+  logo: Logo/logo.svg
+identidade:
+  design_system: proprio
+  cores: { fundo: "#FFFFFF", texto: "#0E1A33", primaria: "#1D3F8F", menu: "#0E1A33", menu_texto: "#C3CDE3", destaque: "#E9B03A", erro: "#B3261E" }
+  fontes: { titulo: Jost, texto: Atkinson Hyperlegible }
+largura_captura: 1440
+cascas:
+  publica: { topo: true, rodape: true }
+  autenticada: { menu: true, conta_no_pe: [Alterar Senha, Sair do Sistema] }
+perfis:
+  Gestor: [Início, Gestão de Parceiras, Relatórios]
+modulos:
+  01_Portal: { casca: publica }
+  02_Acesso: { casca: publica }
+  03_Cadastro: { casca: publica }
+  04_Gestão: { casca: autenticada, perfil: Gestor }
+  05_API: { casca: publica }
+padroes:
+  listas_sempre_em_tela: true
+  paginacao: 10
+  container_max: 1280
+dados_ficticios:
+  cnpj: alfanumerico
+  sufixo_nomes: Exemplo
+mascaras:
+  CNPJ: "XX.XXX.XXX/XXXX-##"
+  CPF: "###.###.###-##"
+  CEP: "##.###-###"
+  Fone: ["(##) ####-####", "(##) #####-####"]
+documentacao:
+  arquivo_unico: false
+  pdf: retrato
+  prototipo_aberto: true

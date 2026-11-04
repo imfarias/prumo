@@ -1,11 +1,11 @@
 # Índice de Features
 
-As cinco fases do pedido viram cinco features, nesta ordem. Só a 0001 está especificada; as
+As cinco fases do pedido viram cinco features, nesta ordem. Só a 0001 foi especificada e entregue; as
 demais entram no pipeline depois que a anterior for aprovada.
 
 | ID | Título | Status | Data |
 |----|--------|--------|------|
-| 0001 | MVP: parser, modelo, verificação, protótipos (kit `proprio`) e captura pela CLI | Especificado | 2026-11-03 |
+| 0001 | MVP: parser, modelo, verificação, protótipos (kit `proprio`) e captura pela CLI | Aprovado com ressalvas | 2026-11-04 |
 | 0002 | Documentação navegável (substitui o Pirilampo), busca, rastreabilidade e PDF | Planejado | — |
 | 0003 | Programa de computador com instaladores Windows e Linux | Planejado | — |
 | 0004 | Kit gov.br DS, protótipo clicável completo, captura em celular e comparação de versões | Planejado | — |

@@ -1,5 +1,22 @@
 /** API pública do motor do Prumo. Toda a regra mora aqui; CLI e programa são adaptadores. */
-export const VERSAO_MOTOR = '0.1.0';
-
-/** Versão do contrato `modelo/telas.json`. Mudança incompatível sobe a versão maior. */
-export const VERSAO_MODELO = '1.0.0';
+export { VERSAO_MODELO, VERSAO_MOTOR } from './versao.js';
+export { ErroPrumo } from './util/erros.js';
+export type { Achado, ConfigProjeto } from './config/esquema.js';
+export { configPadrao, validarConfig } from './config/esquema.js';
+export { carregarProjeto, type ProjetoCarregado, type FonteConfig } from './config/projeto.js';
+export { migrarConfig } from './config/migrar.js';
+export { carregarOverrides, type Overrides } from './config/overrides.js';
+export { lerFeatures } from './parser/ler.js';
+export { montarIndice, type Indice } from './parser/indice.js';
+export type { ArquivoFeature } from './parser/tipos.js';
+export { montarModelo } from './modelo/montar.js';
+export { serializarModelo } from './modelo/serializar.js';
+export type * from './modelo/tipos.js';
+export { verificar } from './verificacao/verificar.js';
+export { formatarJson, formatarTexto, resumo } from './verificacao/formatar.js';
+export { gerarPrototipos, type PaginaGerada, type Recorte } from './render/gerar.js';
+export { capturar, type ResultadoCaptura } from './navegador/capturar.js';
+export type { Navegador, ResultadoAxe } from './navegador/navegador.js';
+export { NavegadorPlaywright, MENSAGEM_SEM_NAVEGADOR } from './navegador/playwright.js';
+export { compararPng, type ItemComparacao } from './comparacao/png.js';
+export { compararComAtuais, gerar, gerarECapturar, preparar, verificarPreparado, type Preparado } from './executar.js';

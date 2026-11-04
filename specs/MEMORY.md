@@ -17,13 +17,29 @@
 - [2026-11-03] [Arquiteto] Link de cenário do Pirilampo: `#/scenario/{Pasta}_{Arquivo}/{n}`, com `n` = posição **0-based** entre todos os filhos da Funcionalidade (Contexto, Cenário, Esquema), na ordem do arquivo. Com Contexto, o 1º cenário é 1 (RNG-01 → /1, LOV-06 → /53); sem Contexto, o 1º cenário é 0 (em Mensagens de Interface, "Mensagem de Interface" → /0 e MSG-01 → /1). Conferido na saída do Pirilampo (`data-target="#scenario-N"`).
 - [2026-11-03] [Arquiteto] Link de funcionalidade: `#!/feature/{Pasta}_{Arquivo sem .feature}`.
 
+- [2026-11-03] [Líder] Inferência: cada decisão devolve um `Sinal` (regra + descrição + origem) gravado no `telas.json`; a ordem de precedência dos componentes está no 02 da 0001, seção 6.
+- [2026-11-03] [Líder] Páginas geradas: `id` = `{tela}-{campo}`, `data-testid` = `{tela}-{tipo}-{nome}`; um HTML por estado em `saida/prototipos/<módulo>/<tela>/<estado>.html`.
+
 ## Problemas Recorrentes & Soluções
+- [2026-11-04] [Dev] Docker: `*.tsbuildinfo` locais no contexto fazem o `tsc -b` pular a compilação → `.dockerignore` com `**/*.tsbuildinfo`.
+- [2026-11-04] [Tester] IDs que começam com dígito são válidos em HTML mas não em `querySelector` → nos testes usar `getElementById`.
+- [2026-11-04] [Dev] TypeScript 7 não inclui `@types/node` sozinho → `"types": ["node"]` no `tsconfig.base.json`.
+- [2026-11-04] [Tester] PNG do Linux difere < 1% do Windows (antialiasing) → `PRUMO_TOLERANCIA_VISUAL=1.5` no CI Linux.
 
 ## Pontos de Atenção
 - [2026-11-03] [Arquiteto] O repositório é público: nunca versionar features, PNGs, logos ou textos do Vale-Cultura. Testes usam `exemplos/exemplo-ficticio/`.
 - [2026-11-03] [Arquiteto] Commits e PRs sem referência a IA (restrição do usuário). Branch de produção `main`; PR com título igual ao nome da branch; conferir conflitos com `git merge-tree`.
 - [2026-11-03] [Arquiteto] A saída atual do Pirilampo tem texto com codificação quebrada (caracteres `�`); não usar o HTML dele como fonte de texto, só como referência de estrutura e numeração.
-- [2026-11-03] [Arquiteto] O gerador Python citado no pedido (`portal-vale-cultura/doc/Prototipos/comum.py`, `vc.css`, `renderizar.mjs`) não existe em nenhuma branch do `portal-vale-cultura` nem nesta máquina. A referência visual disponível são os 42 PNGs em `Especificações/<módulo>/` e o `novo-vale-cultura/DESIGN.md`.
+- [2026-11-03] [Líder] Material do piloto fica no WSL, em `/var/www/html/memora/valecultura/portal-vale-cultura/doc/` (não versionado no GitLab): `Especificações/`, `html/index.html` (Pirilampo) e `Prototipos/` (gerador Python: `comum.py`, `vc.css`, `telas_*.py`, 41 HTMLs em `telas/`, fontes). O `projeto.yml` do piloto também fica lá. Nada disso entra neste repositório.
+- [2026-11-03] [Líder] As telas feitas à mão usam conhecimento que não está na feature (lista de beneficiárias como janela sobre o portal, larguras de coluna c3/c5/c4, dados de exemplo ricos). A equivalência na fase 1 depende de overrides e de `identidade.css_adicional` apontando para o `vc.css` local.
+
+- [2026-11-03] [Líder] `@cucumber/gherkin` põe o texto livre do cenário `@prototipo` (`**título**` e `![Image](x.png)`) em `scenario.description`, e os comentários `# Módulo/Tipo/Fluxo` em `gherkinDocument.comments` (fora da árvore).
+- [2026-11-03] [Líder] `playwright-core` com `channel: 'msedge'|'chrome'` funciona sem baixar navegador (Edge/Chrome 156 nesta máquina).
+
+- [2026-11-04] [Líder] Nunca rodar `prumo capturar` na pasta do piloto: sobrescreve os PNGs feitos à mão. Para comparar, usar `comparar-png` (captura em pasta temporária).
+- [2026-11-04] [Líder] Propostas para a 0004: layout `janela_sobre`, selo de situação, `logo_claro` (06-final-review, seção 6).
+
+- [2026-11-04] [Usuário] Caixas de mensagem (`.aviso`) mantêm a borda lateral colorida; decisão do usuário.
 
 ## Glossário do Domínio
 - Feature / Funcionalidade: arquivo `.feature` que descreve uma tela (ou uma regra/mensagem de apoio).

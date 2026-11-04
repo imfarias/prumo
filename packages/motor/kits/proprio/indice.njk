@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'">
+<title>Protótipos · {{ projeto.nome }} {{ projeto.versao }}</title>
+<link rel="stylesheet" href="_recursos/prumo.css">
+</head>
+<body>
+<main class="prumo-nav" data-testid="prototipo-indice">
+<h1>Protótipos · {{ projeto.nome }} {{ projeto.versao }}</h1>
+<p>{{ total }} telas geradas pelo Prumo a partir das especificações. Cada estado é uma página.</p>
+{% for mod in modulos %}
+<section aria-labelledby="mod-{{ loop.index }}">
+<h2 id="mod-{{ loop.index }}">{{ mod.nome }}</h2>
+<ul>
+{% for t in mod.telas %}
+<li><a href="{{ t.href }}" data-testid="prototipo-indice-{{ t.testid }}">{{ t.titulo }}</a> <small>({{ t.id }} · {{ t.layout }})</small>
+<div class="estados">Estados: {% for e in t.estados %}<a href="{{ e.href }}">{{ e.rotulo }}</a>{% endfor %}</div></li>
+{% endfor %}
+</ul>
+</section>
+{% endfor %}
+</main>
+</body>
+</html>

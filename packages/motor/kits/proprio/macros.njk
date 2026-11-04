@@ -1,0 +1,92 @@
+{% macro icone(nome) -%}
+<svg class="icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+{%- if nome == "alerta" %}<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/>
+{%- elif nome == "visto" %}<path d="m5 12.5 4.5 4.5L19 7.5"/>
+{%- elif nome == "lupa" %}<circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/>
+{%- elif nome == "enviar" %}<path d="M12 20V9"/><path d="m7 14 5-5 5 5"/><path d="M5 4h14"/>
+{%- elif nome == "arquivo" %}<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>
+{%- elif nome == "info" %}<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>
+{%- endif %}</svg>
+{%- endmacro %}
+
+{% macro mensagem(estado, tela) %}
+{% if estado.resumoErros.length %}
+<div class="aviso erro" role="alert" tabindex="-1" id="{{ tela.testid }}-erros" data-testid="{{ tela.testid }}-resumo-erros">
+  {{ icone("alerta") }}<div><b>Corrija os campos abaixo</b>
+  <ul>{% for e in estado.resumoErros %}<li><a href="#{{ e.id }}">{{ e.rotulo }}: {{ e.texto }}</a></li>{% endfor %}</ul></div>
+</div>
+{% elif estado.mensagemTopo %}
+<div class="aviso {{ estado.mensagemTopo.classe }}" role="{{ 'alert' if estado.mensagemTopo.classe == 'erro' else 'status' }}" data-testid="{{ tela.testid }}-mensagem">
+  {{ icone(estado.mensagemTopo.icone) }}<div><b>{{ estado.mensagemTopo.texto }}</b></div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro rotulo(c) -%}
+{{ c.rotulo }}{% if c.obrigatorio %}<span class="obrig" aria-hidden="true">*</span>{% endif %}
+{%- endmacro %}
+
+{% macro descricao(c) -%}
+{%- if c.erro %} aria-invalid="true" aria-describedby="{{ c.id }}-erro"{% elif c.ajuda %} aria-describedby="{{ c.id }}-ajuda"{% endif -%}
+{%- endmacro %}
+
+{% macro rodapeCampo(c) %}
+{% if c.ajuda %}<span class="ajuda" id="{{ c.id }}-ajuda">{{ c.ajuda }}</span>{% endif %}
+{% if c.erro %}<span class="erro-campo" id="{{ c.id }}-erro">{{ icone("alerta") }}{{ c.erro }}</span>{% endif %}
+{% endmacro %}
+
+{% macro campo(c) %}
+{% if c.componente == "leitura" %}
+<div class="campo {{ c.classe }}"><label for="{{ c.id }}">{{ c.rotulo }}</label><output id="{{ c.id }}" class="valor-leitura" data-testid="{{ c.testid }}">{{ c.valor }}</output>{{ rodapeCampo(c) }}</div>
+{% elif c.componente == "selecao" %}
+<div class="campo {{ c.classe }}{% if c.erro %} invalido{% endif %}"><label for="{{ c.id }}">{{ rotulo(c) }}</label>
+<select id="{{ c.id }}" name="{{ c.id }}" data-testid="{{ c.testid }}"{% if c.obrigatorio %} aria-required="true"{% endif %}{{ descricao(c) }}>
+<option value="">Selecione</option>{% for o in c.opcoes %}<option{% if o == c.valor %} selected{% endif %}>{{ o }}</option>{% endfor %}
+</select>{{ rodapeCampo(c) }}</div>
+{% elif c.componente == "texto-longo" %}
+<div class="campo {{ c.classe }}{% if c.erro %} invalido{% endif %}"><label for="{{ c.id }}">{{ rotulo(c) }}</label>
+<textarea id="{{ c.id }}" name="{{ c.id }}" data-testid="{{ c.testid }}"{% if c.obrigatorio %} aria-required="true"{% endif %}{{ descricao(c) }}>{{ c.valor }}</textarea>{{ rodapeCampo(c) }}</div>
+{% elif c.componente == "caixa" %}
+<div class="campo caixa {{ c.classe }}{% if c.erro %} invalido{% endif %}"><input type="checkbox" id="{{ c.id }}" name="{{ c.id }}" data-testid="{{ c.testid }}"{% if c.marcada %} checked{% endif %}{% if c.obrigatorio %} aria-required="true"{% endif %}{{ descricao(c) }}>
+<label for="{{ c.id }}">{{ c.texto }}{% if c.obrigatorio %}<span class="obrig" aria-hidden="true">*</span>{% endif %}</label>{{ rodapeCampo(c) }}</div>
+{% elif c.componente == "captcha" %}
+<div class="campo {{ c.classe }}{% if c.erro %} invalido{% endif %}"><label for="{{ c.id }}">{{ rotulo(c) }}</label>
+<div class="captcha"><span class="desafio" role="img" aria-label="Código de verificação ilustrativo">{{ c.desafio }}</span>
+<input type="text" id="{{ c.id }}" name="{{ c.id }}" data-testid="{{ c.testid }}" autocomplete="off"{% if c.obrigatorio %} aria-required="true"{% endif %}{{ descricao(c) }}></div>{{ rodapeCampo(c) }}</div>
+{% elif c.componente == "arquivos" %}
+<div class="campo {{ c.classe }}{% if c.erro %} invalido{% endif %}"><span class="rotulo" id="{{ c.id }}-rotulo">{{ rotulo(c) }}</span>
+<ul class="arquivos" aria-labelledby="{{ c.id }}-rotulo" data-testid="{{ c.testid }}">
+{% for a in c.itens %}<li>{{ icone("arquivo") }}<span>{{ a.nome }}</span><label class="botao" for="{{ c.id }}-{{ loop.index }}">{{ icone("enviar") }}Enviar PDF<span class="sr"> — {{ a.nome }}</span></label><input class="sr" type="file" accept="application/pdf" id="{{ c.id }}-{{ loop.index }}" data-testid="{{ c.testid }}-{{ loop.index }}"></li>{% endfor %}
+</ul>{{ rodapeCampo(c) }}</div>
+{% else %}
+<div class="campo {{ c.classe }}{% if c.erro %} invalido{% endif %}"><label for="{{ c.id }}">{{ rotulo(c) }}</label>
+<input type="{{ c.tipoInput }}" id="{{ c.id }}" name="{{ c.id }}" value="{{ c.valor }}" data-testid="{{ c.testid }}"{% if c.placeholder %} placeholder="{{ c.placeholder }}"{% endif %}{% if c.autocomplete %} autocomplete="{{ c.autocomplete }}"{% endif %}{% if c.obrigatorio %} aria-required="true"{% endif %}{{ descricao(c) }}>{{ rodapeCampo(c) }}</div>
+{% endif %}
+{% endmacro %}
+
+{% macro grade(lista) %}<div class="campos">{% for c in lista %}{{ campo(c) }}{% endfor %}</div>{% endmacro %}
+
+{% macro acoes(lista, testid) %}
+{% if lista.length %}
+<div class="acoes" data-testid="{{ testid }}-acoes">
+{% for a in lista %}{% if a.href %}<a class="botao{% if a.primaria %} primario{% endif %}" href="{{ a.href }}" data-testid="{{ a.testid }}">{% if a.icone %}{{ icone(a.icone) }}{% endif %}{{ a.rotulo }}</a>{% else %}<button type="button" class="botao{% if a.primaria %} primario{% endif %}" data-testid="{{ a.testid }}">{% if a.icone %}{{ icone(a.icone) }}{% endif %}{{ a.rotulo }}</button>{% endif %}{% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro tabela(t, testid) %}
+<table data-testid="{{ testid }}-tabela">
+<caption class="sr">{{ t.legenda }}</caption>
+<thead><tr>{% for c in t.colunas %}<th scope="col">{{ c.rotulo }}</th>{% endfor %}</tr></thead>
+<tbody>{% for l in t.linhas %}{% set linha = loop.index %}<tr>{% for v in l %}<td data-rotulo="{{ t.colunas[loop.index0].rotulo }}"{% if t.colunas[loop.index0].numerico %} class="num"{% endif %}>{% if v.acoes %}<span class="acoes-linha">{% for a in v.acoes %}<a href="{{ a.href }}" data-testid="{{ testid }}-linha-{{ linha }}-{{ a.rotulo | slug }}">{{ a.rotulo }}<span class="sr"> (registro {{ linha }})</span></a>{% endfor %}</span>{% else %}{{ v }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+</table>
+{% endmacro %}
+
+{% macro paginacao(p, testid) %}
+<nav class="paginacao" aria-label="Paginação" data-testid="{{ testid }}-paginacao">
+<span class="desabilitado">« Anterior</span>
+{% for i in range(1, p.paginas + 1) %}{% if i == 1 %}<span aria-current="page">1</span>{% else %}<a href="#">{{ i }}</a>{% endif %}{% endfor %}
+{% if p.paginas > 1 %}<a href="#">Próxima »</a>{% else %}<span class="desabilitado">Próxima »</span>{% endif %}
+<span class="total">{{ p.total }} registros</span>
+</nav>
+{% endmacro %}
