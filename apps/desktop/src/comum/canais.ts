@@ -132,6 +132,7 @@ export const CANAIS = {
   'atualizacao:instalar': nada,
   'atualizacao:lembrarDepois': nada,
   'sobre:ler': nada,
+  'janela:pronta': nada,
 } as const;
 
 export type Canal = keyof typeof CANAIS;

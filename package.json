@@ -14,7 +14,7 @@
     "build": "npm run build --workspaces --if-present",
     "test": "npm run build && vitest run",
     "cobertura": "npm run build && vitest run --coverage",
-    "tipos": "tsc -b && tsc -p packages/motor/web",
+    "tipos": "tsc -b && tsc -p packages/motor/web && tsc -p apps/desktop",
     "prumo": "tsx apps/cli/src/main.ts"
   },
   "devDependencies": {

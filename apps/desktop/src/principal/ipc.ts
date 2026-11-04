@@ -23,6 +23,8 @@ interface Contexto {
   previa: PreviaAoVivo;
   atualizador: () => Atualizador;
   baixarAtualizacao: () => Promise<{ arquivo: string }>;
+  /** A janela registrou os ouvintes: os eventos guardados até aqui podem ir. */
+  aoFicarPronta: () => void;
 }
 
 /** Diálogos nativos; nos testes (programa não empacotado) respostas fixas de PRUMO_TESTE_DIALOGOS. */
@@ -217,6 +219,9 @@ async function atender(c: Contexto, canal: Canal, d: unknown): Promise<unknown> 
       setTimeout(() => app.quit(), 800);
       return { saindo: true };
     }
+    case 'janela:pronta':
+      c.aoFicarPronta();
+      return true;
     case 'atualizacao:lembrarDepois':
       await c.prefs.mudar((x) => (x.atualizacao.lembrarDepoisAte = new Date(Date.now() + 7 * 86_400_000).toISOString()));
       return true;

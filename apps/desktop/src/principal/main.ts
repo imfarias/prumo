@@ -38,11 +38,22 @@ if (!verificacao && !app.requestSingleInstanceLock()) {
   let janela: BrowserWindow | undefined;
   const ARQ_JANELA = path.join(AQUI, 'janela', 'index.html');
   const ORIGEM = pathToFileURL(path.dirname(ARQ_JANELA)).href;
-  const enviar = (evento: string, dados: unknown) => janela?.webContents.send(evento, dados);
+  // Eventos enviados antes de a janela registrar os ouvintes se perderiam; ficam guardados até 'janela:pronta'.
+  let pronta = false;
+  const guardados: [string, unknown][] = [];
+  const enviar = (evento: string, dados: unknown) => {
+    if (pronta) janela?.webContents.send(evento, dados);
+    else guardados.push([evento, dados]);
+  };
+  const aoFicarPronta = () => {
+    pronta = true;
+    for (const [e, d] of guardados.splice(0)) janela?.webContents.send(e, d);
+  };
   const servicos = new Servicos(prefs, path.join(userData, 'projetos'), enviar);
   const previa = new PreviaAoVivo(servicos, enviar);
 
-  const formato = formatoInstalado(process.execPath);
+  // Nos testes (não empacotado) o formato pode ser fixado para exercitar o download da atualização.
+  const formato = (!app.isPackaged && (process.env.PRUMO_FORMATO as ReturnType<typeof formatoInstalado> | undefined)) || formatoInstalado(process.execPath);
   let atualizador: InstanceType<typeof Atualizador> | undefined;
   const obterAtualizador = () =>
     (atualizador ??= new Atualizador({ versaoAtual: app.getVersion(), url: process.env.PRUMO_ATUALIZACAO_URL || prefs.get().atualizacao.url, formato, pasta: path.join(userData, 'atualizacoes') }));
@@ -61,7 +72,10 @@ if (!verificacao && !app.requestSingleInstanceLock()) {
     }
   });
 
-  app.on('window-all-closed', () => app.quit());
+  // Na verificação só há janelas fora da tela; fechá-las não pode encerrar antes do resultado.
+  app.on('window-all-closed', () => {
+    if (!verificacao) app.quit();
+  });
 
   // Com ESM o Electron só emite 'ready' depois do script principal terminar; esperar aqui travaria.
   void app.whenReady().then(async () => {
@@ -88,7 +102,7 @@ if (!verificacao && !app.requestSingleInstanceLock()) {
         app.exit(1);
       }
     } else {
-      registrarIpc({ janela: () => janela, origem: ORIGEM, servicos, prefs, previa, atualizador: obterAtualizador, baixarAtualizacao });
+      registrarIpc({ janela: () => janela, origem: ORIGEM, servicos, prefs, previa, atualizador: obterAtualizador, baixarAtualizacao, aoFicarPronta });
       janela = new BrowserWindow({
         width: 1320,
         height: 860,

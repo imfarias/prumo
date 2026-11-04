@@ -1,4 +1,4 @@
-import { signal } from '@preact/signals';
+import { computed, signal } from '@preact/signals';
 import type { Canal, Evento } from '../comum/canais.js';
 import type { EstadoTarefa, InfoAtualizacao, ProjetoAberto } from '../comum/tipos.js';
 
@@ -18,6 +18,8 @@ export type Tela = 'projetos' | 'configuracao' | 'verificacao' | 'prototipos' | 
 export const tela = signal<Tela>('projetos');
 export const projeto = signal<ProjetoAberto | undefined>(undefined);
 export const tarefa = signal<EstadoTarefa | undefined>(undefined);
+/** Há tarefa rodando: os botões que iniciam outra ficam desativados (só uma por vez, RN-70). */
+export const ocupado = computed(() => tarefa.value?.estado === 'rodando');
 export const atualizacao = signal<InfoAtualizacao | undefined>(undefined);
 export const mensagem = signal<{ tipo: 'ok' | 'erro' | 'atencao'; texto: string } | undefined>(undefined);
 export const mudancasPendentes = signal(false);

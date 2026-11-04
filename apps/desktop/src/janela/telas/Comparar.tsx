@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { ResultadoComparacaoVisao } from '../../comum/tipos.js';
-import { avisar, invocar, projeto, rodarTarefa, textoDoErro, tela } from '../estado.js';
+import { avisar, invocar, ocupado, projeto, rodarTarefa, textoDoErro, tela } from '../estado.js';
 
 export function Comparar() {
   const [tipo, setTipo] = useState<'pasta' | 'ref'>(projeto.value?.git ? 'ref' : 'pasta');
@@ -52,7 +52,7 @@ export function Comparar() {
         </div>
       )}
       <div class="acoes">
-        <button type="button" class="botao primario" data-testid="comparar-executar" disabled={!valor} onClick={comparar}>Comparar</button>
+        <button type="button" class="botao primario" data-testid="comparar-executar" disabled={!valor || ocupado.value} onClick={comparar}>Comparar</button>
         {r && (
           <>
             <button type="button" class="botao" onClick={() => (tela.value = 'documentacao')}>Gerar documentação ou PDF com a comparação</button>

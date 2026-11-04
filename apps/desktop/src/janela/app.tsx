@@ -47,6 +47,7 @@ function Andamento({ t }: { t: EstadoTarefa }) {
 function Previa() {
   const ligada = useRef<boolean>(true);
   useEffect(() => {
+    void invocar('janela:pronta');
     void invocar<Preferencias>('prefs:ler').then((p) => {
       ligada.current = p.previaAoVivo;
       versaoPrevia.value++;

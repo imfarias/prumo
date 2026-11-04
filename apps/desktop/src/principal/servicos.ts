@@ -18,7 +18,7 @@ import { registrar } from './registro.js';
 
 const exec = promisify(execFile);
 type Enviar = (evento: string, dados: unknown) => void;
-type Parametros = DadosDe<'tarefa:iniciar'>['parametros'];
+type Parametros = Partial<DadosDe<'tarefa:iniciar'>['parametros']>;
 
 /** Acha a pasta de especificações a partir da escolhida: ela mesma, uma "Especificações" abaixo, ou a primeira com .feature. */
 export function acharSpecs(pasta: string, profundidade = 3): string | undefined {

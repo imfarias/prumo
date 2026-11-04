@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { TelaVisao } from '../../comum/tipos.js';
-import { avisar, invocar, projeto, rodarTarefa, textoDoErro } from '../estado.js';
+import { avisar, invocar, ocupado, projeto, rodarTarefa, textoDoErro } from '../estado.js';
 
 interface ResultadoDocs {
   saida: string;
@@ -77,7 +77,7 @@ export function Documentacao() {
           <input id="docs-comparar" type="text" value={comparar} placeholder="pasta, branch, tag ou commit" onInput={(e) => setComparar(e.currentTarget.value)} />
         </div>
         <div class="acoes">
-          <button type="button" class="botao primario" data-testid="docs-gerar" onClick={gerarDocs}>Gerar documentação</button>
+          <button type="button" class="botao primario" data-testid="docs-gerar" disabled={ocupado.value} onClick={gerarDocs}>Gerar documentação</button>
           {docs && (
             <>
               <button type="button" class="botao" onClick={() => void invocar('docs:abrirNoNavegador', { alvo: 'docs' })}>Abrir no navegador</button>
@@ -117,7 +117,7 @@ export function Documentacao() {
         </div>
         <label><input type="checkbox" checked={soMudancas} disabled={!comparar} onChange={(e) => setSoMudancas(e.currentTarget.checked)} /> Só o que mudou (exige a versão anterior acima)</label>
         <div class="acoes">
-          <button type="button" class="botao primario" data-testid="pdf-gerar" disabled={recorte !== 'tudo' && !escolhidos.length} onClick={gerarPdf}>Gerar PDF…</button>
+          <button type="button" class="botao primario" data-testid="pdf-gerar" disabled={ocupado.value || (recorte !== 'tudo' && !escolhidos.length)} onClick={gerarPdf}>Gerar PDF…</button>
           {pdf && (
             <>
               <button type="button" class="botao" onClick={() => void invocar('sistema:abrirArquivo', { alvo: 'pdf' })}>Abrir o PDF</button>

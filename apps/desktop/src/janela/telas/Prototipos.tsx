@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { TelaVisao } from '../../comum/tipos.js';
-import { avisar, invocar, rodarTarefa, textoDoErro, versaoPrevia } from '../estado.js';
+import { avisar, invocar, ocupado, rodarTarefa, textoDoErro, versaoPrevia } from '../estado.js';
 
 const LAYOUTS = ['', 'listagem', 'formulario', 'formulario-etapas', 'leitura', 'api'];
 const COMPONENTES = ['', 'texto', 'mascara', 'email', 'tel', 'data', 'valor', 'numero', 'selecao', 'confirmacao', 'caixa', 'captcha', 'arquivos', 'texto-longo', 'senha', 'leitura'];
@@ -91,16 +91,17 @@ export function Prototipos() {
         </div>
       </div>
       <div class="acoes">
-        <button type="button" class="botao primario" data-testid="prototipos-gerar-modulo" disabled={!modulo} onClick={() => gerarPng({ modulos: [modulo] }, `Módulo ${modulo}`)}>
+        <button type="button" class="botao primario" data-testid="prototipos-gerar-modulo" disabled={!modulo || ocupado.value} onClick={() => gerarPng({ modulos: [modulo] }, `Módulo ${modulo}`)}>
           Gerar PNGs do módulo
         </button>
-        <button type="button" class="botao" data-testid="prototipos-gerar-tudo" onClick={() => gerarPng({}, 'Todas as telas')}>
+        <button type="button" class="botao" data-testid="prototipos-gerar-tudo" disabled={ocupado.value} onClick={() => gerarPng({}, 'Todas as telas')}>
           Gerar PNGs de todas
         </button>
         <button
           type="button"
           class="botao"
           data-testid="prototipos-comparar-png"
+          disabled={ocupado.value}
           onClick={async () => {
             try {
               const r = await rodarTarefa<{ relatorio: string; itens: unknown[] }>('comparar-png', modulo ? { modulos: [modulo] } : {});
@@ -131,7 +132,7 @@ export function Prototipos() {
                   <option value="0.4">40%</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option>
                 </select>
               </label>
-              <button type="button" class="botao pequeno primario" data-testid="prototipos-gerar-tela" onClick={() => gerarPng({ telas: [aberta.id] }, aberta.titulo)}>Gerar PNG desta tela</button>
+              <button type="button" class="botao pequeno primario" data-testid="prototipos-gerar-tela" disabled={ocupado.value} onClick={() => gerarPng({ telas: [aberta.id] }, aberta.titulo)}>Gerar PNG desta tela</button>
               <button type="button" class="botao pequeno" onClick={() => setAberta(undefined)}>Fechar</button>
             </div>
             <div class="moldura">
