@@ -80,12 +80,21 @@ export class NavegadorPlaywright implements Navegador {
     }
   }
 
-  async pdf(url: string, o: { paisagem?: boolean }): Promise<Buffer> {
+  async pdf(url: string, o: { paisagem?: boolean; rodape?: string }): Promise<Buffer> {
     this.contexto ??= await this.novoContexto(false);
     const p = await this.contexto.newPage();
     try {
       await p.goto(url, { waitUntil: 'load' });
-      return await p.pdf({ format: 'A4', landscape: !!o.paisagem, printBackground: true });
+      await p.evaluate(() => document.fonts.ready.then(() => undefined));
+      return await p.pdf({
+        format: 'A4',
+        landscape: !!o.paisagem,
+        printBackground: true,
+        displayHeaderFooter: !!o.rodape,
+        headerTemplate: '<span></span>',
+        footerTemplate: o.rodape ?? '<span></span>',
+        margin: { top: '16mm', bottom: '20mm', left: '14mm', right: '14mm' },
+      });
     } finally {
       await p.close();
     }

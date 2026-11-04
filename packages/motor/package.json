@@ -12,7 +12,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -b"
+    "build": "node scripts/web.mjs && tsc -b",
+    "build:web": "node scripts/web.mjs"
   },
   "dependencies": {
     "@cucumber/gherkin": "42.0.1",
@@ -20,7 +21,10 @@
     "@fontsource/atkinson-hyperlegible": "5.3.0",
     "@fontsource/jost": "5.3.0",
     "axe-core": "4.14.0",
+    "chokidar": "6.0.0",
+    "diff": "9.0.0",
     "markdown-it": "15.0.3",
+    "minisearch": "7.2.0",
     "nunjucks": "3.2.4",
     "pdf-lib": "1.17.1",
     "pixelmatch": "8.0.0",

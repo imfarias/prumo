@@ -56,4 +56,5 @@ export interface ArquivoFeature {
   filhos: Filho[];
   links: LinkCitado[];
   imagens: { alvo: string; origem: Origem }[];
+  fonte: string; // texto do arquivo, sem BOM
 }

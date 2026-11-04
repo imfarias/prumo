@@ -3,7 +3,7 @@ import path from 'node:path';
 import { Command, Option } from 'commander';
 import {
   ErroPrumo, VERSAO_MOTOR, compararComAtuais, formatarJson, formatarTexto, gerar, gerarECapturar, migrarConfig,
-  preparar, resumo, verificarPreparado, type Achado, type Recorte,
+  preparar, resumo, verificarPreparado, gerarDocumentacao, gerarPdf, servir, type Achado, type Recorte,
 } from '@prumo/motor';
 
 /** Códigos de saída: 0 ok · 1 verificação com erro · 2 erro de uso · 3 inesperado. */
@@ -118,6 +118,61 @@ opcoesRecorte(opcoesComuns(programa.command('comparar-png')))
       console.log(`  ${String(i.diferenca).padStart(6)}%  ${i.modulo}/${i.tela}`);
     }
     console.log(`Relatório: ${path.relative(process.cwd(), r.relatorio)}`);
+  });
+
+const opcoesComparar = (c: Command) =>
+  c.option('--comparar <pasta-ou-ref>', 'compara com a versão anterior: pasta de especificações, ou branch, tag ou commit do Git').option('--sem-comparar', 'ignora documentacao.comparar_com do projeto');
+const comparar = (o: { comparar?: string; semComparar?: boolean }) => (o.semComparar ? false : o.comparar);
+const tamanho = (b: number) => (b >= 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
+
+opcoesComparar(opcoesComuns(programa.command('docs')))
+  .description('gera a documentação navegável (substitui o html/index.html do Pirilampo)')
+  .option('--saida <pasta>', 'pasta da documentação (padrão: <specs>/../html)')
+  .option('--arquivo-unico', 'um index.html só, com tudo embutido')
+  .option('--pasta', 'site em pasta (sobrepõe documentacao.arquivo_unico)')
+  .option('--estrito', 'sai com 1 se a verificação tiver erros')
+  .action(async (o) => {
+    const r = await gerarDocumentacao(o.specs, { projeto: o.projeto, saida: o.saida, arquivoUnico: o.arquivoUnico ? true : o.pasta ? false : undefined, comparar: comparar(o) });
+    const d = r.documentacao;
+    const cenarios = d.paginas.reduce((s, x) => s + x.filhos.length, 0);
+    console.log(cabecalho(r.preparado));
+    console.log(`Documentação gerada: ${d.paginas.length} funcionalidades, ${cenarios} cenários, ${Object.keys(d.previas).length} referências · ${tamanho(r.tamanho)} · ${path.relative(process.cwd(), path.join(r.saida, 'index.html'))}${r.modo === 'unico' ? ' (arquivo único)' : ''}`);
+    if (d.comparacao) console.log(`Comparado com ${d.comparacao.versao}: ${d.comparacao.novas.length} novas, ${d.comparacao.alteradas.length} alteradas, ${d.comparacao.removidas.length} removidas.`);
+    for (const a of r.avisos) log(`Aviso: ${a}`);
+    console.log('');
+    imprimirAchados(r.achados, console.log);
+    if (o.estrito && resumo(r.achados).erros) process.exitCode = SAIDA.erros;
+  });
+
+opcoesComparar(opcoesRecorte(opcoesComuns(programa.command('pdf'))))
+  .description('gera o PDF da especificação (tudo, módulos ou funcionalidades)')
+  .requiredOption('--saida <arquivo.pdf>', 'arquivo PDF de saída')
+  .addOption(new Option('--orientacao <orientacao>', 'orientação da página (padrão: documentacao.pdf)').choices(['retrato', 'paisagem']))
+  .option('--so-mudancas', 'só funcionalidades novas ou alteradas (exige --comparar)')
+  .action(async (o) => {
+    const r = await gerarPdf(o.specs, { projeto: o.projeto, saida: o.saida, recorte: recorte(o), orientacao: o.orientacao, soMudancas: o.soMudancas, comparar: comparar(o) });
+    console.log(`PDF gerado: ${r.paginas} páginas · ${path.relative(process.cwd(), r.arquivo)}`);
+  });
+
+opcoesComparar(opcoesComuns(programa.command('servir')))
+  .description('serve a documentação e os protótipos em http://127.0.0.1 e recarrega ao salvar')
+  .option('--porta <n>', 'porta', (v) => {
+    const n = Number(v);
+    if (!Number.isInteger(n) || n < 0 || n > 65535) throw new ErroPrumo('CLI-06', 'A porta deve ser um inteiro entre 0 e 65535.');
+    return n;
+  }, 4300)
+  .action(async (o) => {
+    const s = await servir(o.specs, {
+      porta: o.porta, projeto: o.projeto, comparar: comparar(o),
+      aoGerar: (r) => (r instanceof Error ? log(`erro ao gerar: ${r.message}`) : log(`gerado: ${resumo(r.achados).erros} erros, ${resumo(r.achados).avisos} avisos`)),
+    });
+    console.log(`Servindo em ${s.url} — Ctrl+C para parar.`);
+    const sair = async () => {
+      await s.parar();
+      process.exit(0);
+    };
+    process.once('SIGINT', sair);
+    process.once('SIGTERM', sair);
   });
 
 programa

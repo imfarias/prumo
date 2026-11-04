@@ -1,0 +1,95 @@
+{% import "macros.njk" as m %}
+<article class="funcionalidade" data-endereco="{{ pg.endereco }}" data-testid="docs-funcionalidade">
+<nav class="migalha" aria-label="Migalha"><ol><li><a href="{{ inicio }}">Início</a></li><li>{{ pg.modulo }}</li><li><span aria-current="page">{{ pg.titulo }}</span></li></ol></nav>
+<header class="cabeca">
+<h1>{{ pg.titulo }}{{ m.situacao(pg.situacao) }}</h1>
+<dl class="metadados">
+<div><dt>Funcionalidade</dt><dd><code>{{ pg.nomeFeature }}</code></dd></div>
+{% if pg.modulo %}<div><dt>Módulo</dt><dd>{{ pg.modulo }}</dd></div>{% endif %}
+{% if pg.tipo %}<div><dt>Tipo</dt><dd>{{ pg.tipo }}</dd></div>{% endif %}
+{% if pg.fluxo %}<div><dt>Fluxo</dt><dd>{{ pg.fluxo }}</dd></div>{% endif %}
+</dl>
+</header>
+
+{% if pg.situacao == 'alterada' and comparacao %}
+<div class="faixa-mudanca" role="note" data-testid="docs-faixa-mudanca">
+<p><b>Alterada em relação a {{ comparacao.versao }}.</b> Cenários novos e alterados estão marcados.</p>
+{% if pg.anterior %}<button type="button" class="botao" aria-pressed="false" data-lado-a-lado data-testid="docs-ver-anterior">Ver versão anterior</button>{% endif %}
+</div>
+{% elif pg.situacao == 'nova' and comparacao %}
+<div class="faixa-mudanca nova" role="note"><p><b>Nova em relação a {{ comparacao.versao }}.</b></p></div>
+{% endif %}
+
+{% if pg.erroSintaxe %}
+<div class="aviso erro" role="alert" data-testid="docs-erro-sintaxe"><b>Erro de sintaxe{% if pg.erroSintaxe.linha %} na linha {{ pg.erroSintaxe.linha }}{% endif %}.</b> {{ pg.erroSintaxe.mensagem }}</div>
+{% endif %}
+
+<div class="versoes{% if pg.anterior %} com-anterior{% endif %}">
+<div class="versao-atual">
+{% if pg.narrativaHtml %}<section class="narrativa" aria-label="Narrativa">{{ pg.narrativaHtml | safe }}</section>{% endif %}
+
+{% if pg.prototipo %}
+<section class="prototipo" aria-labelledby="prototipo-titulo" data-testid="docs-prototipo"
+  data-tela="{{ pg.prototipo.tela }}" data-modulo="{{ pg.prototipo.modulo }}">
+<details{% if prototipoAberto or imprimir %} open{% endif %}>
+<summary><h2 id="prototipo-titulo">Protótipo</h2></summary>
+{% if imprimir %}
+<h2 class="titulo-impressao">Protótipo</h2>
+{% if pngImpressao %}<img class="imagem-impressao" src="{{ pngImpressao }}" alt="Protótipo da tela {{ pg.titulo }}">{% endif %}
+{% elif pg.prototipo.estados.length or pg.prototipo.html %}
+<div class="barra-prototipo">
+  <div role="group" aria-label="Estado da tela" class="estados">
+  {% for e in pg.prototipo.estados %}<button type="button" class="botao pequeno" aria-pressed="{{ 'true' if loop.first else 'false' }}" data-estado="{{ e.id }}" data-caminho="{{ raiz }}{{ e.caminho }}" data-testid="docs-prototipo-estado-{{ e.id }}">{{ e.rotulo }}</button>{% endfor %}
+  {% if pg.prototipo.anterior %}{% for e in pg.prototipo.anterior.estados %}{% if loop.first %}<button type="button" class="botao pequeno" aria-pressed="false" data-estado="anterior-{{ e.id }}" data-caminho="{{ raiz }}{{ e.caminho }}" data-testid="docs-prototipo-anterior">Versão anterior</button>{% endif %}{% endfor %}{% endif %}
+  </div>
+  <div role="group" aria-label="Zoom" class="zoom">
+    <button type="button" class="botao pequeno" aria-pressed="true" data-zoom="ajustar" data-testid="docs-prototipo-zoom-ajustar">Ajustar à largura</button>
+    <button type="button" class="botao pequeno" aria-pressed="false" data-zoom="100" data-testid="docs-prototipo-zoom-100">100%</button>
+    {% if not unico %}<a class="botao pequeno" data-nova-aba href="{{ raiz }}{{ pg.prototipo.estados[0].caminho if pg.prototipo.estados.length else pg.prototipo.html }}" target="_blank" rel="noopener">Abrir em nova aba</a>{% endif %}
+  </div>
+</div>
+<div class="moldura" data-testid="docs-prototipo-moldura">
+<iframe title="Protótipo: {{ pg.titulo }}" data-testid="docs-prototipo-iframe" loading="lazy"
+  {% if not unico %}src="{{ raiz }}{{ pg.prototipo.estados[0].caminho if pg.prototipo.estados.length else pg.prototipo.html }}"{% endif %}
+  {% if unico %}data-blob="{{ pg.prototipo.tela }}/{{ pg.prototipo.estados[0].id if pg.prototipo.estados.length else 'padrao' }}"{% endif %}></iframe>
+</div>
+{% elif pg.prototipo.png %}
+<p><img class="imagem-prototipo" src="{{ pg.prototipo.png }}" alt="Protótipo da tela {{ pg.titulo }}"></p>
+{% endif %}
+</details>
+</section>
+{% endif %}
+
+{% if pg.citadas.length %}
+<section class="citadas" aria-labelledby="citadas-titulo"><h2 id="citadas-titulo">Regras e mensagens citadas</h2>
+<ul class="lista-codigos">{% for c in pg.citadas %}<li><a href="{{ c.href }}" data-previa="{{ c.previa }}">{{ c.codigo }}</a> {{ c.titulo }}</li>{% endfor %}</ul>
+</section>
+{% endif %}
+
+{% for f in pg.filhos %}{{ m.filho(f, not imprimir, pg.endereco) }}{% endfor %}
+
+{% if pg.removidos.length %}
+<section class="removidos" aria-labelledby="removidos-titulo" data-testid="docs-removidos"><h2 id="removidos-titulo">Cenários removidos desde {{ comparacao.versao }}</h2>
+{% for r in pg.removidos %}<h3>{{ r.titulo }}</h3><p class="diff">{{ r.html | safe }}</p>{% endfor %}
+</section>
+{% endif %}
+</div>
+
+{% if pg.anterior %}
+<div class="versao-anterior" hidden data-testid="docs-versao-anterior" aria-label="Versão anterior ({{ comparacao.versao }})">
+<h2>Versão anterior ({{ comparacao.versao }})</h2>
+{% if pg.anterior.narrativaHtml %}<section class="narrativa">{{ pg.anterior.narrativaHtml | safe }}</section>{% endif %}
+{% for f in pg.anterior.filhos %}<section class="cenario"><h3><span class="tipo-filho">{{ f.tipo }}:</span> {{ f.titulo }}</h3>{{ f.descricaoHtml | safe }}{{ m.passos(f.passos, f.titulo) }}{% for t in f.exemplos %}{{ m.tabela(t, f.titulo + ': exemplos') }}{% endfor %}</section>{% endfor %}
+</div>
+{% endif %}
+</div>
+
+{% if not imprimir %}
+<section class="fonte" aria-labelledby="fonte-titulo">
+<details><summary><h2 id="fonte-titulo">Texto do arquivo</h2></summary>
+<p><code>{{ pg.relativo }}</code></p>
+<pre class="gherkin" tabindex="0">{{ pg.fonte }}</pre>
+</details>
+</section>
+{% endif %}
+</article>

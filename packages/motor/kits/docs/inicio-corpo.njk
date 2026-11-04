@@ -1,0 +1,40 @@
+<div class="inicio" data-testid="docs-inicio">
+<section class="nao-encontrado" hidden data-testid="docs-nao-encontrado" aria-live="polite">
+<h1>Não encontrado</h1>
+<p>O endereço <code class="endereco-pedido"></code> não corresponde a nenhuma funcionalidade ou cenário desta versão.</p>
+<p class="sugestao" hidden>Talvez você procure: <a href="#"></a></p>
+<p>Use a busca no topo ou o menu.</p>
+</section>
+<section class="resultados-busca" hidden data-testid="docs-resultados-pagina" aria-labelledby="resultados-titulo"><h1 id="resultados-titulo">Resultados da busca</h1><ol></ol></section>
+<section class="apresentacao">
+<h1>{{ projeto.nome }} <small>versão {{ projeto.versao }}</small></h1>
+{% if projeto.orgao %}<p>{{ projeto.orgao }}</p>{% endif %}
+<dl class="numeros" data-testid="docs-numeros">
+<div><dt>Funcionalidades</dt><dd>{{ numeros.funcionalidades }}</dd></div>
+<div><dt>Telas</dt><dd>{{ numeros.telas }}</dd></div>
+<div><dt>Cenários</dt><dd>{{ numeros.cenarios }}</dd></div>
+<div><dt>Regras</dt><dd>{{ numeros.regras }}</dd></div>
+<div><dt>Listas</dt><dd>{{ numeros.listas }}</dd></div>
+<div><dt>Mensagens</dt><dd>{{ numeros.mensagens }}</dd></div>
+</dl>
+{% if comparacao %}<p class="faixa-mudanca">Comparado com <b>{{ comparacao.versao }}</b>: {{ comparacao.novas.length }} novas, {{ comparacao.alteradas.length }} alteradas, {{ comparacao.removidas.length }} removidas. <a href="{{ hrefMudancas }}">Ver o que mudou</a></p>{% endif %}
+</section>
+
+<section aria-labelledby="verificacao-titulo" data-testid="docs-verificacao">
+<h2 id="verificacao-titulo">Verificação</h2>
+{% set erros = achados | selectattr('severidade', 'equalto', 'erro') | list %}
+{% set avisos = achados | selectattr('severidade', 'equalto', 'aviso') | list %}
+<p>{{ erros.length }} {{ 'erro' if erros.length == 1 else 'erros' }}, {{ avisos.length }} {{ 'aviso' if avisos.length == 1 else 'avisos' }}.</p>
+{% if achados.length %}
+<div class="tabela" role="region" aria-label="Achados da verificação" tabindex="0"><table>
+<thead><tr><th scope="col">Severidade</th><th scope="col">Onde</th><th scope="col">Código</th><th scope="col">Mensagem</th></tr></thead>
+<tbody>{% for a in achados %}<tr><td><span class="sev {{ a.severidade }}">{{ a.severidade }}</span></td><td>{% if a.href %}<a href="{{ a.href }}">{{ a.arquivo }}{% if a.linha %}:{{ a.linha }}{% endif %}</a>{% else %}{{ a.arquivo }}{% if a.linha %}:{{ a.linha }}{% endif %}{% endif %}</td><td><code>{{ a.codigo }}</code></td><td>{{ a.mensagem }}{% if a.sugestao %} <small>{{ a.sugestao }}</small>{% endif %}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endif %}
+</section>
+
+<section aria-labelledby="modulos-titulo">
+<h2 id="modulos-titulo">Funcionalidades</h2>
+<div class="lista-modulos">{% import "macros.njk" as m %}{{ m.arvore(arvore, '#inicio', hrefPagina) }}</div>
+</section>
+</div>

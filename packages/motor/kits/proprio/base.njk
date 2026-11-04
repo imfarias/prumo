@@ -10,6 +10,7 @@
 <title>{{ tela.titulo }} · {{ projeto.nome }}</title>
 <link rel="stylesheet" href="{{ recursos }}/prumo.css">
 {% if cssAdicional %}<link rel="stylesheet" href="{{ recursos }}/{{ cssAdicional }}">{% endif %}
+<script src="{{ recursos }}/prumo-prototipo.js"></script>
 </head>
 <body data-testid="{{ tela.testid }}-pagina" data-layout="{{ layout }}">
 {% block corpo %}{% endblock %}
