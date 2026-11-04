@@ -417,17 +417,24 @@ function iniciarCopiar() {
   for (const b of $$<HTMLButtonElement>('[data-copiar]')) {
     b.addEventListener('click', async () => {
       const url = `${urlDoIndex()}#!/f/${encodeURIComponent(art!.dataset.endereco!)}/c/${b.dataset.copiar}`;
-      try {
-        await navigator.clipboard.writeText(url);
-      } catch {
+      b.dataset.copiado = url;
+      // A API da área de transferência pode ficar esperando permissão (navegador sem tela, file://): prazo de 1 s.
+      const api = navigator.clipboard?.writeText(url).then(() => true, () => false) ?? Promise.resolve(false);
+      const ok = await Promise.race([api, new Promise<boolean>((r) => setTimeout(() => r(false), 1000))]);
+      if (!ok) {
         const t = document.createElement('textarea');
         t.value = url;
+        t.setAttribute('readonly', '');
+        t.className = 'sr';
         document.body.append(t);
         t.select();
-        document.execCommand('copy');
-        t.remove();
+        try {
+          document.execCommand('copy');
+        } finally {
+          t.remove();
+          b.focus();
+        }
       }
-      b.dataset.copiado = url;
       anunciar('Link do cenário copiado.');
     });
   }

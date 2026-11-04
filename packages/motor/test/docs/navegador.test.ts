@@ -130,10 +130,10 @@ comNavegador('prévia, copiar link e protótipo (CT-P03, CT-P04, CT-P07, CT-P08)
   it('copiar link: endereço novo que abre o cenário', async () => {
     const a = await abrir(fPagina(pasta, '01_Portal_02_Portal_Lista_Parceiras'));
     await a.pg.click('[data-testid="docs-copiar-2"]');
+    await a.pg.waitForSelector('[data-testid="docs-copiar-2"][data-copiado]');
     const url = (await a.pg.getAttribute('[data-testid="docs-copiar-2"]', 'data-copiado'))!;
     expect(url).toMatch(/index\.html#!\/f\/01_Portal_02_Portal_Lista_Parceiras\/c\/2$/);
-    await a.pg.waitForTimeout(100);
-    expect(await a.pg.textContent('[data-testid="docs-anuncio"]')).toBe('Link do cenário copiado.');
+    await a.pg.waitForFunction(() => document.querySelector('[data-testid="docs-anuncio"]')?.textContent === 'Link do cenário copiado.', undefined, { timeout: 5000 });
     await a.pg.goto(url);
     await a.pg.waitForTimeout(150);
     expect(await a.pg.getAttribute('.cenario.destacado', 'id')).toBe('c-2');
