@@ -1,0 +1,66 @@
+name: release
+# Instaladores do programa de computador numa release do GitHub, com SHA256SUMS.txt (CT-X06).
+# O Prumo instalado consulta releases/latest e só baixa o que confere com essas somas.
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+jobs:
+  instaladores:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Versão do programa igual à tag
+        shell: bash
+        run: |
+          versao=$(node -p "require('./apps/desktop/package.json').version")
+          [ "v$versao" = "$GITHUB_REF_NAME" ] || { echo "apps/desktop/package.json tem $versao, a tag é $GITHUB_REF_NAME"; exit 1; }
+      - run: npm run build --workspace @prumo/motor
+      - run: npm run dist --workspace @prumo/desktop
+      - name: Testar instalar, verificar e desinstalar
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            pwsh -NoProfile -File apps/desktop/scripts/testar-instaladores.ps1 apps/desktop/release
+          else
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+            bash apps/desktop/scripts/testar-instaladores.sh apps/desktop/release
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: instaladores-${{ runner.os }}
+          path: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.msi
+            apps/desktop/release/*.deb
+            apps/desktop/release/*.AppImage
+          if-no-files-found: error
+
+  publicar:
+    needs: instaladores
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: instaladores, merge-multiple: true }
+      - name: SHA256SUMS.txt
+        working-directory: instaladores
+        run: |
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          sha256sum -c SHA256SUMS.txt
+      - name: Criar a release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "$GITHUB_REF_NAME" instaladores/* --repo "$GITHUB_REPOSITORY" --title "Prumo ${GITHUB_REF_NAME#v}" --generate-notes

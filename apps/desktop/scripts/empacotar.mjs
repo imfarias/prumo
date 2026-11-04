@@ -32,7 +32,7 @@ await build({
   // playwright-core só é usado pela CLI (import preguiçoso); no programa o navegador é o próprio Electron.
   external: ['electron', 'playwright-core'],
   // Em produção as variáveis de teste (diálogos e editor falsos) deixam de existir no código.
-  define: producao ? { 'process.env.PRUMO_TESTE_DIALOGOS': 'undefined', 'process.env.PRUMO_EDITOR_TESTE': 'undefined' } : {},
+  define: producao ? { 'process.env.PRUMO_TESTE_DIALOGOS': 'undefined', 'process.env.PRUMO_EDITOR_TESTE': 'undefined', 'process.env.PRUMO_FORMATO': 'undefined' } : {},
   banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);" },
 });
 

@@ -4,9 +4,9 @@ Gera protótipos de tela, documentação navegável e verificação dos requisit
 especificações em Gherkin (`.feature`), no mesmo formato usado com o Pirilampo. Nenhum arquivo
 de especificação existente precisa mudar.
 
-> Fases 1 e 2 de 5 prontas: verificação, protótipos HTML e PNG, documentação navegável (substitui o
-> Pirilampo), comparação de versões e PDF, pela linha de comando e pela imagem Docker. Programa de
-> computador e kit gov.br vêm nas próximas fases ([`specs/INDEX.md`](specs/INDEX.md)).
+> Fases 1 a 3 de 5 prontas: verificação, protótipos HTML e PNG, documentação navegável (substitui o
+> Pirilampo), comparação de versões e PDF, pela linha de comando, pela imagem Docker e pelo programa de
+> computador (Windows e Linux). Kit gov.br e sugestões por IA vêm nas próximas fases ([`specs/INDEX.md`](specs/INDEX.md)).
 
 ## O que faz hoje
 
@@ -28,7 +28,34 @@ de especificação existente precisa mudar.
 - **PDF:** de tudo, de módulos ou de funcionalidades, com capa, sumário numerado e tabelas sem corte.
 - **`prumo servir`:** documentação em `http://127.0.0.1:4300`, recarregada ao salvar.
 
-## Uso
+## Programa de computador
+
+Baixe o instalador da [última release](https://github.com/imfarias/prumo/releases/latest):
+
+| Sistema | Arquivo | Instalação |
+|---|---|---|
+| Windows (por usuário, sem administrador) | `Prumo-Setup-<versão>.exe` | Cria atalhos e o "Abrir com o Prumo" no botão direito de pastas |
+| Windows (por máquina) | `Prumo-<versão>.msi` | Em `Program Files`; o "Abrir com o Prumo" se liga em Preferências |
+| Debian e Ubuntu | `prumo_<versão>_amd64.deb` | `sudo apt install ./prumo_<versão>_amd64.deb` |
+| Outras distribuições Linux | `Prumo-<versão>.AppImage` | `chmod +x` e executar |
+
+O programa traz o próprio navegador: não precisa de Node.js, Edge nem Chrome. Abra a pasta de especificações
+(ou uma pasta acima dela) e use as telas de Configuração, Verificação, Protótipos, Documentação e PDF e
+Comparar versões. Com a "Prévia ao vivo" ligada, a verificação e os protótipos se atualizam ao salvar um `.feature`.
+
+**Aviso do Windows.** Os instaladores ainda não são assinados com certificado. Na primeira execução o
+SmartScreen mostra "O Windows protegeu o computador": clique em **Mais informações** e em **Executar assim mesmo**.
+Para conferir o arquivo, compare o SHA-256 com o `SHA256SUMS.txt` da release:
+
+```powershell
+Get-FileHash .\Prumo-Setup-0.1.0.exe -Algorithm SHA256
+```
+
+**Atualizações.** Uma vez por dia o programa consulta as releases do GitHub e avisa quando há versão nova.
+Nada é baixado sem o seu clique; o arquivo baixado é conferido com o `SHA256SUMS.txt` antes de abrir o
+instalador. A consulta pode ser desligada em Preferências. Nenhum dado das especificações sai do computador.
+
+## Linha de comando
 
 Requer Node.js 22.12 ou superior e o Edge ou o Chrome instalados (ou `PRUMO_CHROMIUM`).
 
@@ -97,6 +124,16 @@ npm test
 
 ```bash
 npm run cobertura
+```
+
+Programa de computador em desenvolvimento e instaladores:
+
+```bash
+npm run iniciar --workspace @prumo/desktop
+```
+
+```bash
+npm run dist --workspace @prumo/desktop
 ```
 
 O projeto de exemplo em [`exemplos/exemplo-ficticio`](exemplos/exemplo-ficticio) é inteiramente fictício e serve aos testes.

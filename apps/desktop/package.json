@@ -11,7 +11,7 @@
   "scripts": {
     "build": "node scripts/empacotar.mjs",
     "iniciar": "node scripts/empacotar.mjs && electron .",
-    "dist": "node scripts/empacotar.mjs && electron-builder --config electron-builder.yml"
+    "dist": "node scripts/empacotar.mjs --producao && electron-builder --config electron-builder.yml"
   },
   "dependencies": {},
   "devDependencies": {

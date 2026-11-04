@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { cp, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { existsSync, readFileSync } from 'node:fs';
@@ -8,6 +8,7 @@ import { APP_DESKTOP, caminhoDoElectron } from '../fabricas/electron.js';
 import { abrirPrograma, type Programa } from '../fabricas/programa.js';
 import { servirRelease, type ReleaseFalsa } from '../fabricas/release.js';
 import { criarEspecificacaoGrande } from '../../../../packages/motor/test/fabricas/especificacao-grande.js';
+import { criarRepositorio } from '../../../../packages/motor/test/fabricas/repositorio-git.js';
 
 const LONGO = 120_000;
 let p: Programa | undefined;
@@ -201,6 +202,28 @@ describe('programa de computador (E2E)', () => {
     await p.w.locator('[data-testid^="comparar-item-"]', { hasText: 'cenário' }).first().click();
     const quadro = p.w.frameLocator('[data-testid="comparar-iframe"]');
     await expect.poll(() => quadro.locator('body').textContent({ timeout: 10_000 }).catch(() => ''), { timeout: 15_000 }).toContain('3322-9999');
+  }, LONGO);
+
+  it('CT-E07: comparar com uma tag do Git, sem checkout', async () => {
+    const repo = await criarRepositorio();
+    p = await abrirPrograma({
+      semProjeto: true,
+      preparar: async (specs) => {
+        await cp(repo.raizGit, path.dirname(specs), { recursive: true });
+      },
+    });
+    await repo.limpar();
+    await p.abrirExemplo();
+    await p.ir('comparar');
+    await p.w.click('[data-testid="comparar-tipo-ref"]');
+    await p.w.fill('[data-testid="comparar-ref"]', 'v1');
+    await p.w.click('[data-testid="comparar-executar"]');
+    // Mesmas mudanças da fábrica da 0002: Ajuda e Empresas novas, Contato alterada, API e Parceiras removidas (renomeação sugerida).
+    await esperarMensagem(/Comparado com v1: 2 novas, 1 alteradas, 2 removidas/);
+    // Sem checkout: a branch e a árvore de trabalho continuam como estavam.
+    const git = (...a: string[]) => execFileSync('git', a, { cwd: path.dirname(p!.specs), encoding: 'utf8' }).trim();
+    expect(git('rev-parse', '--abbrev-ref', 'HEAD')).toBe('main');
+    expect(git('status', '--porcelain', '--', path.basename(p.specs))).toBe('');
   }, LONGO);
 
   it('CT-E09: prévia ao vivo atualiza a verificação quando o .feature muda fora do programa', async () => {

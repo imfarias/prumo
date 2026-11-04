@@ -2,7 +2,7 @@ import { existsSync, statSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { app, BrowserWindow, Menu, nativeTheme } from 'electron';
+import { app, BrowserWindow, Menu, nativeTheme, net } from 'electron';
 
 // Recursos do motor (kits, fontes, axe) fora do pacote; antes de qualquer uso do motor.
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
@@ -56,7 +56,7 @@ if (!verificacao && !app.requestSingleInstanceLock()) {
   const formato = (!app.isPackaged && (process.env.PRUMO_FORMATO as ReturnType<typeof formatoInstalado> | undefined)) || formatoInstalado(process.execPath);
   let atualizador: InstanceType<typeof Atualizador> | undefined;
   const obterAtualizador = () =>
-    (atualizador ??= new Atualizador({ versaoAtual: app.getVersion(), url: process.env.PRUMO_ATUALIZACAO_URL || prefs.get().atualizacao.url, formato, pasta: path.join(userData, 'atualizacoes') }));
+    (atualizador ??= new Atualizador({ versaoAtual: app.getVersion(), url: process.env.PRUMO_ATUALIZACAO_URL || prefs.get().atualizacao.url, formato, pasta: path.join(userData, 'atualizacoes'), buscar: (u, i) => net.fetch(u, i) }));
   const baixarAtualizacao = async () => {
     const arq = await obterAtualizador().baixar((feito, total) => enviar('tarefa:andamento', { id: 'atualizacao', tipo: 'atualizacao', etapa: 'Baixando a atualização', feito, total, estado: 'rodando' }));
     return { arquivo: path.basename(arq) };
