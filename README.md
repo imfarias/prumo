@@ -36,8 +36,8 @@ Baixe o instalador da [última release](https://github.com/imfarias/prumo/releas
 |---|---|---|
 | Windows (por usuário, sem administrador) | `Prumo-Setup-<versão>.exe` | Cria atalhos e o "Abrir com o Prumo" no botão direito de pastas |
 | Windows (por máquina) | `Prumo-<versão>.msi` | Em `Program Files`; o "Abrir com o Prumo" se liga em Preferências |
-| Debian e Ubuntu | `prumo_<versão>_amd64.deb` | `sudo apt install ./prumo_<versão>_amd64.deb` |
-| Outras distribuições Linux | `Prumo-<versão>.AppImage` | `chmod +x` e executar |
+| Debian e Ubuntu | `prumo_<versão>_amd64.deb` | `sudo apt install ./prumo_<versão>_amd64.deb` (temporariamente fora das releases) |
+| Outras distribuições Linux | `Prumo-<versão>.AppImage` | `chmod +x` e executar (temporariamente fora das releases) |
 
 O programa traz o próprio navegador: não precisa de Node.js, Edge nem Chrome. Abra a pasta de especificações
 (ou uma pasta acima dela) e use as telas de Configuração, Verificação, Protótipos, Documentação e PDF e

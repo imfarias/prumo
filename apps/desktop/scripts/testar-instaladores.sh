@@ -7,8 +7,8 @@ PASTA="$1"
 LIMITE_MB=150
 falhar() { echo "FALHOU: $*"; exit 1; }
 
-DEB=$(ls "$PASTA"/prumo_*_amd64.deb | head -n1)
-APPIMAGE=$(ls "$PASTA"/Prumo-*.AppImage | head -n1)
+DEB=$(realpath "$(ls "$PASTA"/prumo_*_amd64.deb | head -n1)")  # apt só trata caminho absoluto ou ./ como arquivo
+APPIMAGE=$(realpath "$(ls "$PASTA"/Prumo-*.AppImage | head -n1)")
 for f in "$DEB" "$APPIMAGE"; do
   mb=$(( $(stat -c %s "$f") / 1048576 ))
   echo "$(basename "$f"): ${mb} MB"

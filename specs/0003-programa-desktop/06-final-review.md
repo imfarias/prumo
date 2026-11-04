@@ -7,7 +7,8 @@
 O programa cumpre a especificação nesta máquina e no piloto. As ressalvas:
 - os testes de instalar e desinstalar (CT-X) e o E2E no Linux ainda não rodaram; rodam no CI do PR;
 - o roteiro manual com NVDA e Orca não foi feito;
-- os instaladores não são assinados, então o SmartScreen avisa (decisão do usuário, documentada).
+- os instaladores não são assinados, então o SmartScreen avisa (decisão do usuário, documentada);
+- os instaladores do Linux estão temporariamente fora do CI e da release, a pedido do usuário. O `.deb` (97 MB) e o `.AppImage` (120 MB) são gerados, mas a instalação no CI falhou: o `apt` recebia um caminho relativo, o que o roteiro já corrige. Para reativar, voltar `ubuntu-latest` à matriz do job `instaladores` no `ci.yml` e no `release.yml`.
 
 ## 1. Aderência à Especificação
 

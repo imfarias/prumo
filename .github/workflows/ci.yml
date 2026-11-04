@@ -72,7 +72,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        # Linux desativado temporariamente (instalação do .deb falhando no CI); para reativar, voltar ubuntu-latest à lista.
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
