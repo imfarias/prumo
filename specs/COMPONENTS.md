@@ -14,6 +14,16 @@
 | `icone(nome)` | `macros.njk` | Ícones SVG de traço (alerta, visto, lupa, enviar, arquivo, info) | nome | macros |
 | Casca pública / autenticada | `casca-publica.njk`, `casca-autenticada.njk` | Moldura com topo/rodapé ou trilho com menu do perfil | `casca`, `projeto` | layouts |
 
+## Documentação (kit `docs`, `packages/motor/kits/docs/`)
+| Nome | Caminho | Propósito | Parâmetros principais | Usado em |
+|---|---|---|---|---|
+| `arvore(nos, atual, hrefPagina)` | `macros.njk` | Menu em `<details>` (sem JS), com situação nova/alterada | árvore, endereço atual | todas as páginas |
+| `filho(f, interativo)` | `macros.njk` | Cenário com tags, "Copiar link", mudanças e "Usada em" | `FilhoDoc` | funcionalidade |
+| `tabela(t, legenda)` / `passos(lista)` | `macros.njk` | Tabelas em região rolável e passos com palavra-chave | `TabelaDoc`, `PassoDoc[]` | funcionalidade, prévia |
+| `*-corpo.njk` | kit | Corpo de cada página, reaproveitado no modo pasta, no arquivo único e no PDF | contexto de `gerar.ts` | — |
+| Cliente `web/` | `packages/motor/web/` | Rotas antigas, busca, prévia, protótipo, copiar, contraste, Matriz | `#prumo-config`, `window.PRUMO_DADOS` | todas as páginas |
+| Ponte do protótipo | `kits/proprio/prumo-prototipo.js` | Altura e navegação do protótipo dentro do iframe | — | protótipos |
+
 ## Motor (`packages/motor/src/`)
 | Nome | Caminho | Propósito | Assinatura |
 |---|---|---|---|
@@ -29,6 +39,13 @@
 | `contraste`, `misturar` | `render/contraste.ts` | WCAG e derivação de tokens | — |
 | `gravarSeMudou` | `render/recursos.ts` | Escrita idempotente | `(destino, conteúdo) → boolean` |
 | `dentroDe`, `relativoPosix` | `util/caminhos.ts` | Proteção de caminho de saída | — |
+| `renderizarMarkdown`, `renderizarInline`, `sanitizarHtml` | `docs/markdown.ts` | Markdown/HTML das features com lista branca e reescrita de links | `(texto, {linkDe, imagemDe})` |
+| `modeloDaDocumentacao`, `lerRotaAntiga`, `arquivoDaPagina` | `docs/modelo.ts` | Modelo da documentação e rotas do Pirilampo | `(Preparado, {modo, comparacao?})` |
+| `compararVersoes`, `diffHtml`, `textoDoFilho` | `docs/comparar.ts` | Comparação por título e diff por palavra | `(atual, anterior, versao)` |
+| `prepararVersaoAnterior` | `docs/anterior.ts` | Pasta ou ref do Git → `Preparado` | `(specs, valor)` |
+| `gerarDocumentacao`, `prepararDocumentacao` | `docs/gerar.ts` | Site em pasta ou arquivo único | `(specs, OpcoesDocs)` |
+| `gerarPdf`, `paginasDosDestinos` | `docs/pdf.ts` | PDF com sumário numerado; páginas dos destinos nomeados | `(specs, OpcoesPdf)` |
+| `servir` | `docs/servir.ts` | Servidor local com recarga | `(specs, {porta})` |
 
 ## Adaptadores
 | Nome | Caminho | Propósito |
@@ -41,3 +58,5 @@
 |---|---|---|
 | `criarProjeto` | `packages/motor/test/fabricas/projeto.ts` | Cópia do exemplo em pasta temporária com acento e espaço |
 | `fabricaFeature` | `packages/motor/test/fabricas/feature.ts` | Feature no padrão Pirilampo para casos plantados |
+| `criarRepositorio`, `aplicarMudancas` | `packages/motor/test/fabricas/repositorio-git.ts` | Repositório Git com duas versões (nova, alterada, removida, renomeada) |
+| `criarEspecificacaoGrande` | `packages/motor/test/fabricas/especificacao-grande.ts` | Especificação 5× o piloto para medir a busca |

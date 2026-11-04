@@ -30,6 +30,12 @@
 - [2026-11-04] [Dev] TypeScript 7 não inclui `@types/node` sozinho → `"types": ["node"]` no `tsconfig.base.json`.
 - [2026-11-04] [Tester] PNG do Linux difere < 1% do Windows (antialiasing) → `PRUMO_TOLERANCIA_VISUAL=1.5` no CI Linux.
 
+- [2026-11-04] [Dev] `<template>` descarta doctype, `<html>` e `<head>`: HTML completo de protótipo vai como string no JSON do arquivo único.
+- [2026-11-04] [Dev] No Windows, `os.tmpdir()` pode vir com nome curto (8.3): caminho relativo ao repositório Git só pelo próprio Git (`rev-parse --show-prefix`).
+- [2026-11-04] [Tester] Grade CSS com conteúdo largo no celular: `minmax(0, 1fr)`, nunca `1fr`.
+- [2026-11-04] [Dev] Nunjucks não tem `selectattr` com comparação; contagens vêm prontas do TS.
+- [2026-11-04] [Dev] As ferramentas de escrita convertem sequências de escape (barra + u, barra + n) em caracteres reais: em código, prefira `String.fromCharCode(...)` e `[...].join(...)`.
+
 ## Pontos de Atenção
 - [2026-11-03] [Arquiteto] O repositório é público: nunca versionar features, PNGs, logos ou textos do Vale-Cultura. Testes usam `exemplos/exemplo-ficticio/`.
 - [2026-11-03] [Arquiteto] Commits e PRs sem referência a IA (restrição do usuário). Branch de produção `main`; PR com título igual ao nome da branch; conferir conflitos com `git merge-tree`.
@@ -46,6 +52,8 @@
 - [2026-11-04] [Usuário] Caixas de mensagem (`.aviso`) mantêm a borda lateral colorida; decisão do usuário.
 
 - [2026-11-04] [Requisito] O Pirilampo atual: rotas `#!/feature/:feature/:search*?` e `#/scenario/:feature/:id`; link de cenário abre a regra numa janela com "Acessar Feature"; busca typeahead por frases; protótipo `.html` em iframe (`#!/html/…`); comparação com `master` (ícones NEW/DIFFERENT no menu). A 0002 preserva todos, inclusive a comparação (o usuário usa; trazida da 0004 para a 0002 em 2026-11-04). Saída no mesmo caminho do Pirilampo (`html/index.html`) e prévia de regra em janela, confirmados pelo usuário.
+
+- [2026-11-04] [Líder] A documentação do piloto ainda não foi gerada no `html/` do Vale-Cultura: trocar o `index.html` do Pirilampo depende do usuário.
 
 ## Glossário do Domínio
 - Feature / Funcionalidade: arquivo `.feature` que descreve uma tela (ou uma regra/mensagem de apoio).
