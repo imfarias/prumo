@@ -38,7 +38,11 @@ $exe = Join-Path $dir 'Prumo.exe'
 $menu = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Prumo.lnk'
 $area = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Prumo.lnk'
 Start-Process -FilePath $setup.FullName -ArgumentList '/S' -Wait
-Esperar { Test-Path $exe } 60 'Prumo.exe instalado'
+for ($i = 0; $i -lt 120 -and -not (Test-Path $exe); $i++) { Start-Sleep -Milliseconds 500 }
+if (-not (Test-Path $exe)) {
+  Get-ChildItem (Join-Path $env:LOCALAPPDATA 'Programs') -Recurse -Depth 1 -Filter '*.exe' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  encontrado: $($_.FullName)" }
+  Falhar "Prumo.exe não está em $dir"
+}
 if (-not (Test-Path $menu)) { Falhar "atalho do menu Iniciar ausente: $menu" }
 if (-not (Test-Path $area)) { Falhar "atalho da área de trabalho ausente: $area" }
 $cmd = (Get-ItemProperty "$CHAVE\command").'(default)'

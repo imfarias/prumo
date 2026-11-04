@@ -4,6 +4,9 @@ productName: Prumo
 copyright: Copyright © 2026 Vinicius Farias
 electronVersion: 45.2.2
 npmRebuild: false
+# O nome do pacote no workspace (@prumo/desktop) daria a pasta de instalação e o pacote .deb; no instalado é "prumo".
+extraMetadata:
+  name: prumo
 directories:
   output: release
   buildResources: build
@@ -71,7 +74,6 @@ linux:
     entry:
       Name: Prumo
       Comment: Protótipos e documentação a partir de especificações Gherkin
-      Exec: prumo %U
       Terminal: 'false'
       Categories: Development;Office;
   target:
