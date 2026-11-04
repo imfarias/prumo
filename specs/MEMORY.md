@@ -20,6 +20,10 @@
 - [2026-11-03] [Líder] Inferência: cada decisão devolve um `Sinal` (regra + descrição + origem) gravado no `telas.json`; a ordem de precedência dos componentes está no 02 da 0001, seção 6.
 - [2026-11-03] [Líder] Páginas geradas: `id` = `{tela}-{campo}`, `data-testid` = `{tela}-{tipo}-{nome}`; um HTML por estado em `saida/prototipos/<módulo>/<tela>/<estado>.html`.
 
+- [2026-11-04] [Líder] PDF: sumário com número real de página em 2 passadas, lendo os destinos nomeados (`/Dests`) que o Chromium grava para cada `id` linkado (`pdf-lib`).
+- [2026-11-04] [Líder] Arquivo único: protótipo em `<template>` aberto num iframe `blob:` com o CSS injetado inline na hora; CSS por outro `blob:` é bloqueado a partir de `file://`.
+- [2026-11-04] [Líder] Índice de busca em `file://` vai num `<script>` (atribuído a `window`), nunca por `fetch`.
+
 ## Problemas Recorrentes & Soluções
 - [2026-11-04] [Dev] Docker: `*.tsbuildinfo` locais no contexto fazem o `tsc -b` pular a compilação → `.dockerignore` com `**/*.tsbuildinfo`.
 - [2026-11-04] [Tester] IDs que começam com dígito são válidos em HTML mas não em `querySelector` → nos testes usar `getElementById`.
