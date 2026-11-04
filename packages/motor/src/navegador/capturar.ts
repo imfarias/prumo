@@ -17,14 +17,19 @@ export interface ResultadoCaptura {
   situacao: 'gravado' | 'sem-mudanca';
 }
 
-/** Duas imagens são "iguais" se têm o mesmo tamanho e nenhum pixel difere (antialiasing ignorado). */
+/**
+ * Duas imagens são "iguais" se têm o mesmo tamanho e no máximo 0,01% dos pixels difere (antialiasing ignorado).
+ * O Chromium sem GPU (CI Linux) varia alguns pixels entre capturas da mesma página; regravar por isso suja o Git.
+ * Uma mudança real (cor, texto, campo) atinge muito mais que isso.
+ */
+const TOLERANCIA_MESMA = 0.0001;
 function mesmaImagem(a: Buffer, b: Buffer): boolean {
   if (a.equals(b)) return true;
   try {
     const x = PNG.sync.read(a);
     const y = PNG.sync.read(b);
     if (x.width !== y.width || x.height !== y.height) return false;
-    return pixelmatch(x.data, y.data, null, x.width, x.height, { threshold: 0, includeAA: false }) === 0;
+    return pixelmatch(x.data, y.data, null, x.width, x.height, { threshold: 0, includeAA: false }) <= Math.floor(x.width * x.height * TOLERANCIA_MESMA);
   } catch {
     return false;
   }

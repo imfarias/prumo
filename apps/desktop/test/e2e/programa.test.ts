@@ -273,6 +273,8 @@ describe('programa de computador (E2E)', () => {
 
     // Teclado: Tab chega ao menu, Enter abre a tela, o foco fica visível.
     await p.ir('projetos');
+    // Trocar de tela leva o foco ao conteúdo (depois da renderização); só então o teste assume o teclado.
+    await p.w.waitForFunction(() => (document.activeElement as HTMLElement | null)?.dataset.testid === 'app-conteudo');
     await p.w.focus('[data-testid="app-menu-verificacao"]');
     await p.w.keyboard.press('Tab');
     await p.w.keyboard.press('Shift+Tab');
