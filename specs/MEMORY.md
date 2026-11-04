@@ -20,11 +20,21 @@
 - [2026-11-03] [Líder] Inferência: cada decisão devolve um `Sinal` (regra + descrição + origem) gravado no `telas.json`; a ordem de precedência dos componentes está no 02 da 0001, seção 6.
 - [2026-11-03] [Líder] Páginas geradas: `id` = `{tela}-{campo}`, `data-testid` = `{tela}-{tipo}-{nome}`; um HTML por estado em `saida/prototipos/<módulo>/<tela>/<estado>.html`.
 
+- [2026-11-04] [Líder] PDF: sumário com número real de página em 2 passadas, lendo os destinos nomeados (`/Dests`) que o Chromium grava para cada `id` linkado (`pdf-lib`).
+- [2026-11-04] [Líder] Arquivo único: protótipo em `<template>` aberto num iframe `blob:` com o CSS injetado inline na hora; CSS por outro `blob:` é bloqueado a partir de `file://`.
+- [2026-11-04] [Líder] Índice de busca em `file://` vai num `<script>` (atribuído a `window`), nunca por `fetch`.
+
 ## Problemas Recorrentes & Soluções
 - [2026-11-04] [Dev] Docker: `*.tsbuildinfo` locais no contexto fazem o `tsc -b` pular a compilação → `.dockerignore` com `**/*.tsbuildinfo`.
 - [2026-11-04] [Tester] IDs que começam com dígito são válidos em HTML mas não em `querySelector` → nos testes usar `getElementById`.
 - [2026-11-04] [Dev] TypeScript 7 não inclui `@types/node` sozinho → `"types": ["node"]` no `tsconfig.base.json`.
 - [2026-11-04] [Tester] PNG do Linux difere < 1% do Windows (antialiasing) → `PRUMO_TOLERANCIA_VISUAL=1.5` no CI Linux.
+
+- [2026-11-04] [Dev] `<template>` descarta doctype, `<html>` e `<head>`: HTML completo de protótipo vai como string no JSON do arquivo único.
+- [2026-11-04] [Dev] No Windows, `os.tmpdir()` pode vir com nome curto (8.3): caminho relativo ao repositório Git só pelo próprio Git (`rev-parse --show-prefix`).
+- [2026-11-04] [Tester] Grade CSS com conteúdo largo no celular: `minmax(0, 1fr)`, nunca `1fr`.
+- [2026-11-04] [Dev] Nunjucks não tem `selectattr` com comparação; contagens vêm prontas do TS.
+- [2026-11-04] [Dev] As ferramentas de escrita convertem sequências de escape (barra + u, barra + n) em caracteres reais: em código, prefira `String.fromCharCode(...)` e `[...].join(...)`.
 
 ## Pontos de Atenção
 - [2026-11-03] [Arquiteto] O repositório é público: nunca versionar features, PNGs, logos ou textos do Vale-Cultura. Testes usam `exemplos/exemplo-ficticio/`.
@@ -41,6 +51,10 @@
 
 - [2026-11-04] [Usuário] Caixas de mensagem (`.aviso`) mantêm a borda lateral colorida; decisão do usuário.
 
+- [2026-11-04] [Requisito] O Pirilampo atual: rotas `#!/feature/:feature/:search*?` e `#/scenario/:feature/:id`; link de cenário abre a regra numa janela com "Acessar Feature"; busca typeahead por frases; protótipo `.html` em iframe (`#!/html/…`); comparação com `master` (ícones NEW/DIFFERENT no menu). A 0002 preserva todos, inclusive a comparação (o usuário usa; trazida da 0004 para a 0002 em 2026-11-04). Saída no mesmo caminho do Pirilampo (`html/index.html`) e prévia de regra em janela, confirmados pelo usuário.
+
+- [2026-11-04] [Líder] A documentação do piloto ainda não foi gerada no `html/` do Vale-Cultura: trocar o `index.html` do Pirilampo depende do usuário.
+
 ## Glossário do Domínio
 - Feature / Funcionalidade: arquivo `.feature` que descreve uma tela (ou uma regra/mensagem de apoio).
 - Tela: unidade de protótipo derivada de uma feature com cenário `@prototipo`.
@@ -49,6 +63,7 @@
 - Estado: variação de uma tela derivada de um cenário (sucesso, erro com MSG, vazio, sem permissão).
 - RNG / LOV / MSG / E-mail: regra de negócio, lista de valores, mensagem de interface e mensagem de e-mail; cada uma é um cenário dos arquivos de apoio.
 - Override: ajuste por tela em `telas.overrides.yml`, versionado, aplicado sobre a inferência.
+- Prévia: janela com o conteúdo de uma regra/mensagem aberta a partir de um link (documentação).
 - Achado: item da verificação (erro, aviso ou informação) com `arquivo:linha` e motivo.
 
 ## Convenções de Código

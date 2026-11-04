@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>{{ projeto.nome }} {{ projeto.versao }}{% if recorte %} · {{ recorte }}{% endif %}</title>
+<link rel="stylesheet" href="recursos/prumo-docs.css">
+<link rel="stylesheet" href="recursos/impressao.css">
+</head>
+<body class="impressao">
+<main>
+<section class="capa" id="capa">
+{% if logo %}<img src="{{ logo }}" alt="">{% endif %}
+<h1>{{ projeto.nome }}</h1>
+<p class="recorte">Especificação de requisitos · versão {{ projeto.versao }}</p>
+{% if recorte %}<p class="recorte">{{ recorte }}</p>{% endif %}
+{% if projeto.orgao %}<p>{{ projeto.orgao }}</p>{% endif %}
+{% if comparacao %}<p>Mudanças em relação a {{ comparacao.versao }}</p>{% endif %}
+</section>
+<nav class="sumario" aria-labelledby="sumario-titulo">
+<h1 id="sumario-titulo">Sumário</h1>
+<ol>
+{% for g in grupos %}
+<li class="modulo"><span class="titulo">{{ g.titulo }}</span></li>
+{% for pg in g.paginas %}<li><a class="titulo" href="#f-{{ pg.id }}">{{ pg.titulo }}</a><span class="pg" data-alvo="f-{{ pg.id }}">0000</span></li>{% endfor %}
+{% endfor %}
+</ol>
+</nav>
+{% for pg in paginas %}<div id="f-{{ pg.id }}" class="pagina-impressao">{{ pg.html | safe }}</div>{% endfor %}
+</main>
+</body>
+</html>

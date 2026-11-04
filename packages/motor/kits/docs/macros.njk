@@ -1,0 +1,47 @@
+{% macro situacao(s) %}{% if s == 'nova' %}<span class="situacao nova" title="Nova em relação à versão anterior">nova</span>{% elif s == 'alterada' %}<span class="situacao alterada" title="Alterada em relação à versão anterior">alterada</span>{% endif %}{% endmacro %}
+
+{% macro arvore(nos, atual, hrefPagina) %}
+<ul>
+{% for n in nos %}
+{% if n.endereco %}
+<li><a href="{{ hrefPagina(n.arquivo, n.endereco) }}" data-endereco="{{ n.endereco }}"{% if n.endereco == atual %} aria-current="page"{% endif %} data-testid="docs-menu-{{ n.arquivo }}">{{ n.titulo }}{% if n.erro %} <span class="situacao erro">com erro</span>{% endif %}</a>{{ situacao(n.situacao) }}</li>
+{% else %}
+<li><details{% if contem(n, atual) %} open{% endif %}><summary>{{ n.titulo }}{{ situacao(n.situacao) }}</summary>{{ arvore(n.filhos, atual, hrefPagina) }}</details></li>
+{% endif %}
+{% endfor %}
+</ul>
+{% endmacro %}
+
+{% macro tabela(t, legenda) %}
+<div class="tabela" role="region" aria-label="{{ legenda }}" tabindex="0"><table class="t-{{ t.tipo }} cols-{{ t.cabecalho.length }}">
+<thead><tr>{% for c in t.cabecalho %}<th scope="col">{{ c | safe }}</th>{% endfor %}</tr></thead>
+<tbody>{% for l in t.linhas %}<tr>{% for c in l %}<td>{{ c | safe }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+</table></div>
+{% endmacro %}
+
+{% macro passos(lista, legenda) %}
+{% for p in lista %}
+<p class="passo"><span class="palavra">{{ p.palavra }}</span> {{ p.html | safe }}</p>
+{% if p.tabela %}{{ tabela(p.tabela, legenda + ': tabela do passo ' + loop.index) }}{% endif %}
+{% if p.docString %}<pre class="docstring">{{ p.docString }}</pre>{% endif %}
+{% endfor %}
+{% endmacro %}
+
+{% macro filho(f, interativo, enderecoPagina) %}
+<section id="{{ f.ancora }}" class="cenario{% if f.situacao and f.situacao != 'igual' %} mudou-{{ f.situacao }}{% endif %}" aria-labelledby="{{ f.ancora }}-titulo" data-testid="docs-cenario-{{ f.posicao }}">
+<header class="cabeca-cenario">
+<h2 id="{{ f.ancora }}-titulo"><span class="tipo-filho">{{ f.tipo }}:</span> {{ f.titulo }}</h2>
+{% for t in f.tags %}<span class="tag">{{ t }}</span>{% endfor %}{{ situacao(f.situacao) }}
+{% if interativo %}<button type="button" class="botao pequeno" data-copiar="{{ f.posicao }}" aria-label="Copiar link do cenário {{ f.titulo }}" data-testid="docs-copiar-{{ f.posicao }}">Copiar link</button>{% endif %}
+</header>
+{% if f.diffHtml %}<details class="mudancas" data-testid="docs-mudancas-{{ f.posicao }}"><summary>Ver mudanças</summary><p class="diff">{{ f.diffHtml | safe }}</p></details>{% endif %}
+{{ f.descricaoHtml | safe }}
+{{ passos(f.passos, f.titulo) }}
+{% for t in f.exemplos %}<p class="palavra">Exemplos</p>{{ tabela(t, f.titulo + ': exemplos') }}{% endfor %}
+{% if f.usadaEm %}
+<div class="usada-em" data-testid="docs-usada-em-{{ f.posicao }}"><h3>Usada em</h3>
+{% if f.usadaEm.length %}<ul>{% for u in f.usadaEm %}<li><a href="{{ u.href }}">{{ u.pagina }}</a> › {{ u.cenario }}</li>{% endfor %}</ul>{% else %}<p>Não é citada em nenhuma funcionalidade.</p>{% endif %}
+</div>
+{% endif %}
+</section>
+{% endmacro %}

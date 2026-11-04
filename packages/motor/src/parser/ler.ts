@@ -119,7 +119,7 @@ export function converter(doc: GherkinDocument, caminho: string, specs: string, 
   return {
     caminho, relativo, pasta, nome, endereco: `${pasta}_${nome}`,
     titulo: f.name, descricao: f.description, linha: f.location.line, tags: f.tags.map((t) => t.name),
-    metadados, filhos, links, imagens,
+    metadados, filhos, links, imagens, fonte,
   };
 }
 

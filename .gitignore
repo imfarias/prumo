@@ -8,3 +8,4 @@ saida/
 /projetos-locais/
 *.tsbuildinfo
 *.tmp.*
+packages/motor/kits/docs/prumo-docs.js

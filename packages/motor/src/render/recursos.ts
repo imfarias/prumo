@@ -52,6 +52,7 @@ export async function gravarRecursos(saida: string, kitDir: string, config: Conf
   await mkdir(path.join(dir, 'fontes'), { recursive: true });
   const css = cssDosTokens(config, achados, arquivoConfig) + (await readFile(path.join(kitDir, 'estilo.css'), 'utf8'));
   await gravarSeMudou(path.join(dir, 'prumo.css'), css);
+  await gravarSeMudou(path.join(dir, 'prumo-prototipo.js'), await readFile(path.join(kitDir, 'prumo-prototipo.js')));
   for (const familia of fontesUsadas(config, [], arquivoConfig)) {
     for (const a of FONTES_EMBUTIDAS[familia]!.arquivos) {
       await gravarSeMudou(path.join(dir, 'fontes', a.nome), await readFile(caminhoFonte(familia, a.nome)));

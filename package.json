@@ -13,7 +13,7 @@
     "build": "npm run build --workspaces --if-present",
     "test": "npm run build && vitest run",
     "cobertura": "npm run build && vitest run --coverage",
-    "tipos": "tsc -b",
+    "tipos": "tsc -b && tsc -p packages/motor/web",
     "prumo": "tsx apps/cli/src/main.ts"
   },
   "devDependencies": {
@@ -22,6 +22,7 @@
     "@types/nunjucks": "3.2.6",
     "@types/pngjs": "6.0.5",
     "@vitest/coverage-v8": "5.1.0",
+    "esbuild": "0.28.2",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
     "vitest": "5.1.0"

@@ -1,0 +1,48 @@
+{% import "macros.njk" as m %}<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; frame-src 'self' blob:; connect-src 'self'">
+<meta name="generator" content="Prumo {{ versaoPrumo }}">
+<title>{{ tituloPagina }} · {{ projeto.nome }} {{ projeto.versao }}</title>
+{% if unico %}<style>{{ cssInline | safe }}</style>{% else %}<link rel="stylesheet" href="{{ raiz }}recursos/prumo-docs.css">{% endif %}
+<script>try{if(localStorage.getItem('prumo-tema')==='contraste')document.documentElement.dataset.tema='contraste'}catch(e){}</script>
+</head>
+<body>
+<a class="pular" href="#conteudo" data-testid="docs-pular">Pular para o conteúdo</a>
+<header class="topo" data-testid="docs-topo">
+  <button type="button" class="botao-menu" aria-controls="menu" aria-expanded="false" data-testid="docs-botao-menu">Menu</button>
+  <a class="marca" href="{{ inicio }}">{% if logo %}<img src="{{ logo }}" alt="">{% endif %}<span>{{ projeto.nome }} <small>versão {{ projeto.versao }}</small></span></a>
+  <div class="busca" role="search">
+    <label for="busca" class="sr">Buscar na especificação (atalho: / ou Ctrl+K)</label>
+    <input id="busca" type="search" autocomplete="off" placeholder="Buscar (/ ou Ctrl+K)" role="combobox" aria-expanded="false" aria-controls="busca-resultados" aria-autocomplete="list" data-testid="docs-busca">
+    <ul id="busca-resultados" role="listbox" aria-label="Resultados da busca" hidden data-testid="docs-busca-resultados"></ul>
+    <p id="busca-status" class="sr" aria-live="polite"></p>
+  </div>
+  <button type="button" class="botao-contraste" aria-pressed="false" data-testid="docs-contraste">Alto contraste</button>
+</header>
+<div class="corpo">
+<nav id="menu" class="menu" aria-label="Funcionalidades" data-testid="docs-menu">
+  <ul>
+    <li><a href="{{ inicio }}" data-pagina="#inicio"{% if atual == '#inicio' %} aria-current="page"{% endif %}>Início</a></li>
+    {% if comparacao %}<li><a href="{{ hrefMudancas }}" data-pagina="#mudancas"{% if atual == '#mudancas' %} aria-current="page"{% endif %}>O que mudou</a></li>{% endif %}
+    <li><a href="{{ hrefMatriz }}" data-pagina="#matriz"{% if atual == '#matriz' %} aria-current="page"{% endif %}>Matriz</a></li>
+  </ul>
+  {{ m.arvore(arvore, atual, hrefPagina) }}
+</nav>
+<main id="conteudo" tabindex="-1" data-testid="docs-conteudo">
+{% block conteudo %}{% endblock %}
+</main>
+</div>
+<footer class="rodape">{{ projeto.nome }} {{ projeto.versao }}{% if projeto.orgao %} · {{ projeto.orgao }}{% endif %} · gerado pelo Prumo {{ versaoPrumo }}</footer>
+<dialog id="previa" class="previa" aria-labelledby="previa-titulo" data-testid="docs-previa">
+  <h2 id="previa-titulo"></h2>
+  <div class="previa-corpo"></div>
+  <p class="acoes"><a class="botao primario" href="#" data-testid="docs-previa-abrir">Abrir</a> <button type="button" class="botao" data-fechar data-testid="docs-previa-fechar">Fechar</button></p>
+</dialog>
+<script type="application/json" id="prumo-config">{{ config | dump | safe }}</script>
+{% if unico %}{{ dadosUnico | safe }}<script>{{ jsInline | safe }}</script>{% else %}<script src="{{ raiz }}recursos/dados.js"></script>
+<script src="{{ raiz }}recursos/prumo-docs.js"></script>{% endif %}
+</body>
+</html>

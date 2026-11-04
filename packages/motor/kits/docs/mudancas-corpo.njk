@@ -1,0 +1,11 @@
+<div class="mudancas-pagina" data-testid="docs-o-que-mudou">
+<h1>O que mudou desde {{ comparacao.versao }}</h1>
+<p>{{ comparacao.novas.length }} novas, {{ comparacao.alteradas.length }} alteradas, {{ comparacao.removidas.length }} removidas.</p>
+<h2>Novas</h2>
+{% if comparacao.novas.length %}<ul>{% for e in comparacao.novas %}<li><a href="{{ hrefEndereco(e) }}">{{ tituloDe(e) }}</a></li>{% endfor %}</ul>{% else %}<p>Nenhuma.</p>{% endif %}
+<h2>Alteradas</h2>
+{% if comparacao.alteradas.length %}<ul>{% for e in comparacao.alteradas %}<li><a href="{{ hrefEndereco(e) }}">{{ tituloDe(e) }}</a> — {{ cenariosMudados(e) }}</li>{% endfor %}</ul>{% else %}<p>Nenhuma.</p>{% endif %}
+<h2>Removidas</h2>
+{% if comparacao.removidas.length %}<ul>{% for r in comparacao.removidas %}<li>{{ r.titulo }} <code>{{ r.endereco }}</code></li>{% endfor %}</ul>{% else %}<p>Nenhuma.</p>{% endif %}
+{% if comparacao.renomeadas.length %}<h2>Possíveis renomeações</h2><ul>{% for r in comparacao.renomeadas %}<li><code>{{ r.de }}</code> → <a href="{{ hrefEndereco(r.para) }}">{{ tituloDe(r.para) }}</a></li>{% endfor %}</ul>{% endif %}
+</div>

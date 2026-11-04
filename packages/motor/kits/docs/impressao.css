@@ -1,0 +1,36 @@
+/* PDF: mesmo conteúdo da documentação, sem navegação nem botões (RN-60). */
+@page { margin: 16mm 14mm 20mm; }
+html { scroll-padding-top: 0; }
+body { font-size: 11pt; }
+.topo, .menu, .rodape, .pular, .botao, .barra-prototipo, .fonte, .previa, .busca, .faixa-mudanca .botao { display: none !important; }
+.corpo { display: block; }
+main { padding: 0; max-width: none; }
+.capa { break-after: page; display: flex; flex-direction: column; justify-content: center; min-height: 230mm; }
+.capa img { max-height: 30mm; width: auto; align-self: flex-start; margin-bottom: 16mm; }
+.capa h1 { font-size: 30pt; }
+.capa .recorte { font-size: 14pt; color: var(--texto-sec); }
+.sumario { break-after: page; }
+.sumario ol { list-style: none; padding: 0; }
+.sumario li { display: flex; gap: 6px; margin: 3px 0; }
+.sumario li .titulo { flex: 1; overflow: hidden; white-space: nowrap; }
+.sumario li .titulo::after { content: " ........................................................................................................................................"; color: var(--texto-sec); }
+.sumario .pg { font-variant-numeric: tabular-nums; min-width: 4ch; text-align: right; }
+.sumario .modulo { font-weight: 700; margin-top: 10px; }
+.sumario a { color: inherit; text-decoration: none; }
+.pagina-impressao { break-before: page; }
+.funcionalidade { break-before: auto; }
+.titulo-impressao { font-size: 14pt; margin: 8px 0; }
+.cenario { break-inside: auto; border-width: 0 0 1px; padding: 8px 0; }
+.cenario:target { box-shadow: none; }
+.cabeca-cenario h2 { break-after: avoid; }
+.tabela { overflow: visible; }
+table { width: 100%; }
+thead { display: table-header-group; }
+tr, .passo { break-inside: avoid; }
+table.cols-5 { font-size: 9.5pt; } table.cols-6 { font-size: 9pt; } table.cols-7, table.cols-8 { font-size: 8pt; }
+table[class*="cols-9"], table[class*="cols-1"] { font-size: 7pt; }
+.prototipo { border: 0; }
+.prototipo summary { display: none; }
+.prototipo .moldura { display: none; }
+.prototipo .imagem-impressao { display: block; max-width: 100%; max-height: 220mm; margin: 0 auto; border: 1px solid var(--linha); }
+a { color: inherit; }

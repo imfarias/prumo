@@ -1,0 +1,20 @@
+<div class="matriz" data-testid="docs-matriz">
+<h1>Matriz de rastreabilidade</h1>
+<p>Funcionalidades com tela × regras (RNG), listas (LOV), mensagens (MSG) e e-mails citados.</p>
+<form class="filtros-matriz" role="search" aria-label="Filtrar a matriz" onsubmit="return false">
+  <label for="matriz-texto">Filtrar funcionalidades</label> <input id="matriz-texto" type="search" data-testid="docs-matriz-filtro">
+  <label for="matriz-tipo">Tipo</label>
+  <select id="matriz-tipo" data-testid="docs-matriz-tipo"><option value="">Todos</option><option value="RNG">Regras</option><option value="LOV">Listas</option><option value="MSG">Mensagens</option><option value="EMAIL">E-mails</option></select>
+</form>
+<div class="tabela grande" role="region" aria-label="Matriz de rastreabilidade" tabindex="0">
+<table data-testid="docs-matriz-tabela">
+<thead><tr><th scope="col">Funcionalidade</th>{% for c in matriz.codigos %}<th scope="col" class="cod" data-tipo="{{ c.tipo }}"><a href="{{ hrefPrevia(c.previa) }}" data-previa="{{ c.previa }}" title="{{ c.titulo }}">{{ c.codigo }}</a></th>{% endfor %}</tr></thead>
+<tbody>
+{% for t in matriz.telas %}{% set i = loop.index0 %}<tr data-texto="{{ t.titulo | lower }}"><th scope="row"><a href="{{ hrefPagina(t.arquivo, t.endereco) }}">{{ t.titulo }}</a></th>{% for c in matriz.codigos %}<td data-tipo="{{ c.tipo }}">{% if marca(i, loop.index0) %}<span aria-hidden="true">●</span><span class="sr">{{ c.codigo }} citada</span>{% endif %}</td>{% endfor %}</tr>
+{% endfor %}
+</tbody></table></div>
+
+<section aria-labelledby="por-codigo"><h2 id="por-codigo">Por código</h2>
+<dl class="por-codigo">{% for c in matriz.codigos %}{% set j = loop.index0 %}<dt data-tipo="{{ c.tipo }}"><a href="{{ hrefPrevia(c.previa) }}" data-previa="{{ c.previa }}">{{ c.codigo }}</a> {{ c.titulo }}</dt><dd data-tipo="{{ c.tipo }}">{% set usos = telasDoCodigo(j) %}{% if usos.length %}{% for t in usos %}<a href="{{ hrefPagina(t.arquivo, t.endereco) }}">{{ t.titulo }}</a>{% if not loop.last %}, {% endif %}{% endfor %}{% else %}Nenhuma tela{% endif %}</dd>{% endfor %}</dl>
+</section>
+</div>
