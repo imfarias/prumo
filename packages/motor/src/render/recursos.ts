@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Achado, ConfigProjeto } from '../config/esquema.js';
 import { dentroDe } from '../util/caminhos.js';
@@ -13,7 +13,10 @@ export async function gravarSeMudou(destino: string, conteudo: string | Buffer):
     if (atual.equals(novo)) return false;
   }
   await mkdir(path.dirname(destino), { recursive: true });
-  await writeFile(destino, novo);
+  // Gravação atômica: cancelar no meio nunca deixa arquivo pela metade.
+  const temp = `${destino}.${process.pid}.${Date.now().toString(36)}.tmp`;
+  await writeFile(temp, novo);
+  await rename(temp, destino);
   return true;
 }
 

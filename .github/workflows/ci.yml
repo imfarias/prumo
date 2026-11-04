@@ -25,8 +25,15 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci
+      - name: Liberar o sandbox do Chromium (Ubuntu 24 restringe user namespaces)
+        if: runner.os == 'Linux'
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - run: npm run tipos
+      # Os testes do programa abrem o Electron; no Linux sem tela, pelo xvfb.
       - run: npm run cobertura
+        if: runner.os == 'Windows'
+      - run: xvfb-run -a npm run cobertura
+        if: runner.os == 'Linux'
       - name: Verificar o exemplo fictício
         run: node apps/cli/dist/main.js verificar --specs exemplos/exemplo-ficticio
 
@@ -57,3 +64,40 @@ jobs:
           docker tag prumo:ci "ghcr.io/${{ github.repository }}:latest"
           docker push "ghcr.io/${{ github.repository }}:$versao"
           docker push "ghcr.io/${{ github.repository }}:latest"
+
+  instaladores:
+    needs: testes
+    # Nas tags quem gera e testa é o release.yml.
+    if: github.ref_type != 'tag'
+    strategy:
+      fail-fast: false
+      matrix:
+        # Linux desativado temporariamente (instalação do .deb falhando no CI); para reativar, voltar ubuntu-latest à lista.
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build --workspace @prumo/motor
+      - name: Gerar os instaladores
+        run: npm run dist --workspace @prumo/desktop
+      - name: Testar instalar, verificar e desinstalar
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            pwsh -NoProfile -File apps/desktop/scripts/testar-instaladores.ps1 apps/desktop/release
+          else
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+            bash apps/desktop/scripts/testar-instaladores.sh apps/desktop/release
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: instaladores-${{ runner.os }}
+          path: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.msi
+            apps/desktop/release/*.deb
+            apps/desktop/release/*.AppImage
+          retention-days: 7

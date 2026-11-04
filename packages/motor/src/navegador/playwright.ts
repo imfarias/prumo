@@ -1,17 +1,17 @@
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
-import { chromium, type Browser, type BrowserContext } from 'playwright-core';
+import type { Browser, BrowserContext } from 'playwright-core';
+import { arquivoAxe } from '../util/recursos.js';
 import { ErroPrumo } from '../util/erros.js';
-import type { Navegador, ResultadoAxe } from './navegador.js';
-
-const require = createRequire(import.meta.url);
+import { SCRIPT_ESTABILIZAR, type Navegador, type ResultadoAxe } from './navegador.js';
 
 export const MENSAGEM_SEM_NAVEGADOR =
   'Nenhum Chrome, Edge ou Chromium encontrado. Instale o Edge ou o Chrome, defina PRUMO_CHROMIUM com o caminho do executável, ou rode pela imagem Docker.';
 
 /** Ordem: PRUMO_CHROMIUM → Edge → Chrome (desenho técnico, seção 7). */
 export async function lancarChromium(canais: string[] = ['msedge', 'chrome']): Promise<Browser> {
+  // Importado sob demanda: o programa de computador não inclui o playwright-core (usa o Chromium do Electron).
+  const { chromium } = await import('playwright-core');
   const exe = process.env.PRUMO_CHROMIUM;
   if (exe) {
     if (!existsSync(exe)) throw new ErroPrumo('CLI-05', `PRUMO_CHROMIUM aponta para ${exe}, que não existe. ${MENSAGEM_SEM_NAVEGADOR}`);
@@ -56,7 +56,7 @@ export class NavegadorPlaywright implements Navegador {
     await p.setViewportSize({ width: o.largura, height: o.altura ?? 900 });
     try {
       await p.goto(url, { waitUntil: 'load' });
-      await p.evaluate(() => document.fonts.ready.then(() => undefined));
+      await p.evaluate(SCRIPT_ESTABILIZAR);
       return await p.screenshot({ fullPage: true, animations: 'disabled', caret: 'hide' });
     } finally {
       await p.close();
@@ -69,7 +69,7 @@ export class NavegadorPlaywright implements Navegador {
     await p.setViewportSize({ width: o.largura ?? 1440, height: 900 });
     try {
       await p.goto(url, { waitUntil: 'load' });
-      await p.addScriptTag({ content: await readFile(require.resolve('axe-core/axe.min.js'), 'utf8') });
+      await p.addScriptTag({ content: await readFile(arquivoAxe(), 'utf8') });
       const r = await p.evaluate(async () => {
         const axe = (globalThis as unknown as { axe: { run: (c: unknown, o: unknown) => Promise<{ violations: { id: string; impact: string | null; help: string; nodes: { target: string[] }[] }[] }> } }).axe;
         return axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'] } });
@@ -85,7 +85,7 @@ export class NavegadorPlaywright implements Navegador {
     const p = await this.contexto.newPage();
     try {
       await p.goto(url, { waitUntil: 'load' });
-      await p.evaluate(() => document.fonts.ready.then(() => undefined));
+      await p.evaluate(SCRIPT_ESTABILIZAR);
       return await p.pdf({
         format: 'A4',
         landscape: !!o.paisagem,

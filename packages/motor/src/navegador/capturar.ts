@@ -8,6 +8,8 @@ import { dentroDe } from '../util/caminhos.js';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import type { Navegador } from './navegador.js';
+import { marcarPng } from './marca-png.js';
+import { andar, type OpcoesExecucao } from '../util/execucao.js';
 
 export interface ResultadoCaptura {
   tela: string;
@@ -15,14 +17,19 @@ export interface ResultadoCaptura {
   situacao: 'gravado' | 'sem-mudanca';
 }
 
-/** Duas imagens são "iguais" se têm o mesmo tamanho e nenhum pixel difere (antialiasing ignorado). */
+/**
+ * Duas imagens são "iguais" se têm o mesmo tamanho e no máximo 0,01% dos pixels difere (antialiasing ignorado).
+ * O Chromium sem GPU (CI Linux) varia alguns pixels entre capturas da mesma página; regravar por isso suja o Git.
+ * Uma mudança real (cor, texto, campo) atinge muito mais que isso.
+ */
+const TOLERANCIA_MESMA = 0.0001;
 function mesmaImagem(a: Buffer, b: Buffer): boolean {
   if (a.equals(b)) return true;
   try {
     const x = PNG.sync.read(a);
     const y = PNG.sync.read(b);
     if (x.width !== y.width || x.height !== y.height) return false;
-    return pixelmatch(x.data, y.data, null, x.width, x.height, { threshold: 0, includeAA: false }) === 0;
+    return pixelmatch(x.data, y.data, null, x.width, x.height, { threshold: 0, includeAA: false }) <= Math.floor(x.width * x.height * TOLERANCIA_MESMA);
   } catch {
     return false;
   }
@@ -32,7 +39,7 @@ function mesmaImagem(a: Buffer, b: Buffer): boolean {
 export async function capturar(
   paginas: PaginaGerada[],
   navegador: Navegador,
-  o: { specs: string; largura: number; forcar?: boolean; paralelo?: number; aoGravar?: (r: ResultadoCaptura) => void },
+  o: { specs: string; largura: number; forcar?: boolean; paralelo?: number; aoGravar?: (r: ResultadoCaptura) => void } & OpcoesExecucao,
 ): Promise<ResultadoCaptura[]> {
   const alvos = paginas.filter((p) => p.destinoPng);
   const resultados: ResultadoCaptura[] = new Array(alvos.length);
@@ -41,8 +48,9 @@ export async function capturar(
     while (proximo < alvos.length) {
       const i = proximo++;
       const p = alvos[i]!;
+      andar(o, `Capturando: ${p.tela}`, i, alvos.length);
       const destino = dentroDe(o.specs, p.destinoPng!);
-      const png = await navegador.capturar(pathToFileURL(p.arquivo).href, { largura: o.largura });
+      const png = marcarPng(await navegador.capturar(pathToFileURL(p.arquivo).href, { largura: o.largura }));
       let situacao: ResultadoCaptura['situacao'] = 'gravado';
       if (!o.forcar && existsSync(destino) && mesmaImagem(await readFile(destino), png)) situacao = 'sem-mudanca';
       else await gravarSeMudou(destino, png);
@@ -51,5 +59,6 @@ export async function capturar(
     }
   };
   await Promise.all(Array.from({ length: Math.min(o.paralelo ?? 4, alvos.length) }, trabalhador));
+  andar(o, 'Capturas concluídas', alvos.length, alvos.length);
   return resultados;
 }

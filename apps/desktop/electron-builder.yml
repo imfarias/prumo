@@ -1,0 +1,90 @@
+# Instaladores do Prumo (Windows .exe/.msi, Linux .deb/.AppImage). Rodar com `npm run dist -w @prumo/desktop`.
+appId: io.github.imfarias.prumo
+productName: Prumo
+copyright: Copyright © 2026 Vinicius Farias
+electronVersion: 45.2.2
+npmRebuild: false
+# O nome do pacote no workspace (@prumo/desktop) daria a pasta de instalação e o pacote .deb; no instalado é "prumo".
+extraMetadata:
+  name: prumo
+directories:
+  output: release
+  buildResources: build
+files:
+  # O esbuild já colocou tudo em dist/; nenhuma dependência de node_modules entra no pacote.
+  - package.json
+  - dist/**
+  - '!dist/recursos/**'
+  - '!dist/**/*.map'
+  - '!**/node_modules/**'
+extraResources:
+  # PRUMO_RECURSOS no programa instalado: kits, fontes e axe ficam fora do asar.
+  - from: dist/recursos
+    to: recursos
+  - from: ../../LICENSE
+    to: LICENSE.txt
+asar: true
+electronFuses:
+  runAsNode: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  enableCookieEncryption: true
+publish: null
+
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: msi
+      arch: [x64]
+  # Sem certificado por enquanto: o Windows mostra o aviso do SmartScreen (ver README).
+  signAndEditExecutable: true
+
+nsis:
+  # Por usuário, sem administrador, em %LOCALAPPDATA%\Programs\Prumo.
+  oneClick: true
+  perMachine: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Prumo
+  deleteAppDataOnUninstall: false
+  include: build/instalador.nsh
+  artifactName: Prumo-Setup-${version}.exe
+
+msi:
+  # Por máquina, em Program Files; "Abrir com o Prumo" é ligado pelas Preferências.
+  perMachine: true
+  oneClick: true
+  createDesktopShortcut: false
+  createStartMenuShortcut: true
+  shortcutName: Prumo
+  artifactName: Prumo-${version}.msi
+
+linux:
+  icon: build/icon.png
+  category: Development
+  executableName: prumo
+  synopsis: Protótipos, documentação navegável e verificação a partir de especificações Gherkin
+  maintainer: Vinicius Farias <imfarias@users.noreply.github.com>
+  mimeTypes: [inode/directory]
+  desktop:
+    entry:
+      Name: Prumo
+      Comment: Protótipos e documentação a partir de especificações Gherkin
+      Terminal: 'false'
+      Categories: Development;Office;
+  target:
+    - target: deb
+      arch: [x64]
+    - target: AppImage
+      arch: [x64]
+
+deb:
+  artifactName: prumo_${version}_amd64.deb
+  depends: [libgtk-3-0, libnss3, libxss1, libxtst6, xdg-utils, libatspi2.0-0, libuuid1, libsecret-1-0]
+
+appImage:
+  artifactName: Prumo-${version}.AppImage

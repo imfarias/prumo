@@ -165,7 +165,8 @@ comNavegador('captura (CT-I20, CT-I22, CT-P09)', () => {
       expect(png.width).toBe(1440);
       const antes = (await stat(path.join(q.dir, '05_API', '01_API_Indicadores.png'))).mtimeMs;
       const r2 = await gerarECapturar(q.dir, { saida: path.join(q.dir, '..', 'saida') });
-      expect(r2.capturas.map((c) => c.situacao)).toEqual(Array(7).fill('sem-mudanca'));
+      const mudou = r2.capturas.filter((c) => c.situacao !== 'sem-mudanca').map((c) => c.tela);
+      expect(mudou, `regravadas sem mudança: ${mudou.join(', ')}`).toEqual([]);
       expect((await stat(path.join(q.dir, '05_API', '01_API_Indicadores.png'))).mtimeMs).toBe(antes);
     } finally {
       await q.limpar();

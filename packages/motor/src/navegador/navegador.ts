@@ -12,3 +12,12 @@ export interface Navegador {
   bloqueados(): string[];
   fechar(): Promise<void>;
 }
+
+/**
+ * Script que a página roda antes da captura: fontes prontas, todas as imagens decodificadas e dois quadros.
+ * Cada imagem espera no máximo 3 s (imagem bloqueada ou preguiçosa não trava a captura).
+ * Só `document.fonts.ready` deixava a captura variar entre execuções quando uma imagem ainda decodificava.
+ */
+export const SCRIPT_ESTABILIZAR =
+  'document.fonts.ready.then(() => Promise.all([...document.images].map((i) => (i.complete && i.naturalWidth) || !i.src ? null : Promise.race([i.decode().catch(() => null), new Promise((r) => setTimeout(r, 3000))]))))' +
+  '.then(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(true)))))';

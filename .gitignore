@@ -9,3 +9,5 @@ saida/
 *.tsbuildinfo
 *.tmp.*
 packages/motor/kits/docs/prumo-docs.js
+dist-teste/
+apps/desktop/release/

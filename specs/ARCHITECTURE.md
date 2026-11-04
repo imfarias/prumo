@@ -103,8 +103,7 @@ Pipeline interno, em etapas puras e encadeadas:
 
 - Autenticação/autorização: não se aplica (ferramenta local, sem contas).
 - Logging: módulo `log` do motor com níveis; a CLI imprime em stderr; `--verboso` habilita debug.
-- Atualização (desktop): consulta opcional a um endereço interno configurável
-  (`atualizacao.url`); nunca baixa sem aceite.
+- Atualização (desktop): consulta diária às releases do GitHub, desligável; nunca baixa sem aceite.
 - Storage: sistema de arquivos local. Saídas sempre dentro de pastas indicadas pelo usuário.
 
 ## 7. Integrações Externas
@@ -114,7 +113,7 @@ Pipeline interno, em etapas puras e encadeadas:
 | Chromium (local) | PNG, PDF e axe | CDP via playwright-core / API Electron | — | Chrome ou Edge instalado, `PRUMO_CHROMIUM` ou o da imagem Docker |
 | Git (local) | Comparar com uma tag | CLI `git` (`git archive`/`git show`) | — | Fase 4; opcional |
 | Editor (VS Code) | Abrir arquivo na linha | `code --goto arquivo:linha` | — | Desktop, fase 3 |
-| Repositório de atualizações | Aviso de versão nova | HTTPS GET de um JSON | — | Endereço interno (GitLab/Nexus do MinC); desligado por padrão |
+| Releases do GitHub do Prumo | Aviso de versão nova | HTTPS GET (API de releases) | — | Ligado por padrão, no máximo 1×/dia; desligável; baixa só com o clique |
 | Provedor de IA | Sugerir overrides | HTTPS | Chave do usuário | Fase 5; opcional, só com pedido explícito |
 
 ## 8. Banco de Dados
@@ -131,7 +130,7 @@ Não há banco. Persistência = arquivos versionados do projeto de requisitos (`
   (`href` só `#…`, relativo ou `https:`; `src` só relativo).
 - Saídas: o motor nunca escreve fora da pasta de saída escolhida (caminhos normalizados e
   conferidos); PNGs só em `Especificações/<módulo>/<tela>.png`.
-- Rede: nenhuma chamada de rede no motor. Páginas geradas não referenciam CDN; CSP
+- Rede: nenhuma chamada de rede no motor; no programa, só a verificação de atualização (desligável). Páginas geradas não referenciam CDN; CSP
   `default-src 'self' 'unsafe-inline' data:` nas páginas e no desktop.
 - Desktop: `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`, nenhum conteúdo
   remoto, `will-navigate` bloqueado para fora de `file://` do projeto.
@@ -188,7 +187,7 @@ Adaptada a uma ferramenta sem backend HTTP:
 - Não há ambiente de servidor. Artefatos de entrega: pacote npm interno (opcional), imagem Docker
   (`ghcr.io/imfarias/prumo`) e instaladores Windows/Linux anexados às releases.
 - CI: GitHub Actions — testes em cada PR; em tag `v*`: imagem Docker e instaladores
-  (`windows-latest`, `ubuntu-latest`). Uso no Jenkins do MinC pela imagem Docker.
+  (`windows-latest`, `ubuntu-latest`). Uso em outros CI (ex.: Jenkins) pela imagem Docker.
 - Branch de produção: `main`. Branches a partir de `main`; PR com título igual ao nome da branch;
   conflitos conferidos com `git merge-tree` antes de abrir. Commits sem referência a IA.
 
