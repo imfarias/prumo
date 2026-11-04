@@ -27,6 +27,9 @@
 - [2026-11-04] [Líder] Arquivo único: protótipo em `<template>` aberto num iframe `blob:` com o CSS injetado inline na hora; CSS por outro `blob:` é bloqueado a partir de `file://`.
 - [2026-11-04] [Líder] Índice de busca em `file://` vai num `<script>` (atribuído a `window`), nunca por `fetch`.
 
+- [2026-11-04] [Líder] Captura no Electron: janela oculta não gera quadros (fontes e captura travam, mesmo com `backgroundThrottling: false`). Usar `offscreen: true` + `setContentSize(largura, scrollHeight)` + `capturePage()` (igual ao Playwright; páginas de 28 mil px funcionam).
+- [2026-11-04] [Líder] Programa: motor no processo principal (fila + AbortSignal), não em `utilityProcess` (que não tem BrowserWindow para captura e PDF).
+
 ## Problemas Recorrentes & Soluções
 - [2026-11-04] [Dev] Docker: `*.tsbuildinfo` locais no contexto fazem o `tsc -b` pular a compilação → `.dockerignore` com `**/*.tsbuildinfo`.
 - [2026-11-04] [Tester] IDs que começam com dígito são válidos em HTML mas não em `querySelector` → nos testes usar `getElementById`.
