@@ -12,7 +12,8 @@ export function Comparar() {
 
   useEffect(() => void invocar<string[]>('comparar:refs').then((x) => {
     setRefs(x);
-    if (x[0] && !ref) setRef(x.find((y) => /^(main|master)$/.test(y)) ?? x[0]);
+    // Só sugere o padrão se o campo ainda estiver vazio: a lista pode chegar depois de a pessoa digitar.
+    if (x[0]) setRef((atual) => atual || (x.find((y) => /^(main|master)$/.test(y)) ?? x[0]!));
   }), []);
 
   const valor = tipo === 'ref' ? ref.trim() : pasta;
