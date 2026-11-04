@@ -20,7 +20,7 @@ documentação navegável que substitui a do Pirilampo:
 
 Funciona offline, abre por `file://` e sai em dois modos: site em pasta ou arquivo único.
 
-**Critérios do pedido atendidos aqui:** §8.8 (comparar com a versão anterior, parte da CLI), §8.4 (conteúdo e links do Pirilampo), §8.6 (busca em menos de
+**Critérios do pedido atendidos aqui:** §8.4 (conteúdo e links do Pirilampo), §8.6 (busca em menos de
 200 ms), §8.7 (PDF com capa, sumário e sem tabela cortada), §8.9 (acessibilidade da documentação) e §8.11 (offline).
 
 ## 2. Atores
@@ -66,7 +66,7 @@ Funciona offline, abre por `file://` e sai em dois modos: site em pasta ou arqui
 | FA-10 | Verificação com erros | A documentação é gerada mesmo assim; a página inicial mostra o resumo dos achados com link para cada um. `--estrito` faz sair com 1 |
 | FA-11 | Funcionalidade com erro de sintaxe | Entra no menu marcada como "com erro"; a página mostra o erro com a linha e o texto bruto do arquivo |
 | FA-12 | Busca sem resultado | Mensagem "Nenhum resultado para "{termo}"" e dica (sem acento, menos palavras) |
-| FA-14 | `prumo docs --comparar <pasta-ou-ref>` (ou `documentacao.comparar_com`) | Compara com a versão anterior (seção 6.8). `<ref>` é uma branch, tag ou commit do repositório Git que contém as especificações (ex.: `master`, `v1.0`); `<pasta>` é uma cópia da pasta de especificações |
+| FA-14 | `prumo docs --comparar <pasta-ou-ref>` (ou `documentacao.comparar_com`) | Compara com a versão anterior (seção 6.6). `<ref>` é uma branch, tag ou commit do repositório Git que contém as especificações (ex.: `master`, `v1.0`); `<pasta>` é uma cópia da pasta de especificações |
 | FA-15 | Referência do Git inexistente ou pasta sem features | Erro de uso: "Versão anterior não encontrada: {valor}. Informe uma branch, tag ou commit, ou uma pasta de especificações." (código 2) |
 | FA-16 | Specs fora de um repositório Git e `--comparar` com referência | Erro de uso explicando que só pasta é aceita fora do Git |
 | FA-13 | Arquivo único passa de 50 MB | Aviso sugerindo o modo pasta (protótipos e imagens pesam) |
