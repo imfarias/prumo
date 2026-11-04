@@ -3,13 +3,53 @@ on:
   pull_request:
   push:
     branches: [main]
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
 jobs:
   testes:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      # Os runners do GitHub já têm Chrome; a ausência de navegador é falha, não teste pulado.
+      PRUMO_EXIGIR_NAVEGADOR: '1'
+      # A referência visual do exemplo foi gerada no Windows; no Linux o antialiasing difere < 1%.
+      PRUMO_TOLERANCIA_VISUAL: ${{ matrix.os == 'ubuntu-latest' && '1.5' || '0.5' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm run tipos
-      - run: npm test
+      - run: npm run cobertura
+      - name: Verificar o exemplo fictício
+        run: node apps/cli/dist/main.js verificar --specs exemplos/exemplo-ficticio
+
+  docker:
+    needs: testes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f docker/Dockerfile -t prumo:ci .
+      - name: Rodar o exemplo na imagem
+        run: |
+          cp -r exemplos/exemplo-ficticio /tmp/specs && find /tmp/specs -name '*.png' -delete && chmod -R a+w /tmp/specs
+          docker run --rm -v /tmp/specs:/docs prumo:ci capturar --specs /docs --saida /tmp/saida
+          test -f /tmp/specs/01_Portal/02_Portal_Lista_Parceiras.png
+      - name: Publicar no GHCR (tags v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          versao="${GITHUB_REF_NAME#v}"
+          docker tag prumo:ci "ghcr.io/${{ github.repository }}:$versao"
+          docker tag prumo:ci "ghcr.io/${{ github.repository }}:latest"
+          docker push "ghcr.io/${{ github.repository }}:$versao"
+          docker push "ghcr.io/${{ github.repository }}:latest"

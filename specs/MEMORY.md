@@ -21,6 +21,10 @@
 - [2026-11-03] [Líder] Páginas geradas: `id` = `{tela}-{campo}`, `data-testid` = `{tela}-{tipo}-{nome}`; um HTML por estado em `saida/prototipos/<módulo>/<tela>/<estado>.html`.
 
 ## Problemas Recorrentes & Soluções
+- [2026-11-04] [Dev] Docker: `*.tsbuildinfo` locais no contexto fazem o `tsc -b` pular a compilação → `.dockerignore` com `**/*.tsbuildinfo`.
+- [2026-11-04] [Tester] IDs que começam com dígito são válidos em HTML mas não em `querySelector` → nos testes usar `getElementById`.
+- [2026-11-04] [Dev] TypeScript 7 não inclui `@types/node` sozinho → `"types": ["node"]` no `tsconfig.base.json`.
+- [2026-11-04] [Tester] PNG do Linux difere < 1% do Windows (antialiasing) → `PRUMO_TOLERANCIA_VISUAL=1.5` no CI Linux.
 
 ## Pontos de Atenção
 - [2026-11-03] [Arquiteto] O repositório é público: nunca versionar features, PNGs, logos ou textos do Vale-Cultura. Testes usam `exemplos/exemplo-ficticio/`.
@@ -31,6 +35,9 @@
 
 - [2026-11-03] [Líder] `@cucumber/gherkin` põe o texto livre do cenário `@prototipo` (`**título**` e `![Image](x.png)`) em `scenario.description`, e os comentários `# Módulo/Tipo/Fluxo` em `gherkinDocument.comments` (fora da árvore).
 - [2026-11-03] [Líder] `playwright-core` com `channel: 'msedge'|'chrome'` funciona sem baixar navegador (Edge/Chrome 156 nesta máquina).
+
+- [2026-11-04] [Líder] Nunca rodar `prumo capturar` na pasta do piloto: sobrescreve os PNGs feitos à mão. Para comparar, usar `comparar-png` (captura em pasta temporária).
+- [2026-11-04] [Líder] Propostas para a 0004: layout `janela_sobre`, selo de situação, `logo_claro` (06-final-review, seção 6).
 
 ## Glossário do Domínio
 - Feature / Funcionalidade: arquivo `.feature` que descreve uma tela (ou uma regra/mensagem de apoio).
