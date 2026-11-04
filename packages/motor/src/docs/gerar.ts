@@ -96,6 +96,7 @@ function contexto(d: Documentacao, p: Preparado, raiz: '' | '../', logo: string 
     arvore: d.arvore,
     comparacao: d.comparacao,
     numeros: d.numeros,
+    totais: { erros: d.achados.filter((a) => a.severidade === 'erro').length, avisos: d.achados.filter((a) => a.severidade === 'aviso').length },
     achados: d.achados.map((a) => ({ ...a, href: a.href && !unico && raiz === '../' ? `../${a.href}` : a.href })),
     matriz: d.matriz,
     unico,
@@ -180,12 +181,16 @@ export async function gerarDocumentacao(specs: string, o: OpcoesDocs = {}): Prom
     const dadosBase = { rotas: d.rotas, previas: d.previas, busca: indice.toJSON() };
 
     if (modo === 'pasta') {
-      await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida: path.join(saida, 'prototipos'), arquivoConfig: p.arquivoConfig });
+      const registrar = async (pasta: string, paginas: { arquivo: string }[]) => {
+        const dir = path.join(saida, pasta);
+        gerados.add(`${pasta}/index.html`);
+        for (const f of await listar(path.join(dir, '_recursos'))) gerados.add(`${pasta}/_recursos/${f}`);
+        for (const pg of paginas) if (pg.arquivo.startsWith(dir)) gerados.add(relativoPosix(saida, pg.arquivo));
+      };
+      await registrar('prototipos', (await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida: path.join(saida, 'prototipos'), arquivoConfig: p.arquivoConfig })).paginas);
       if (anterior && telasAlteradas.length) {
-        await gerarPrototipos(anterior.preparado.modelo, anterior.preparado.config, { specs: anterior.preparado.specs, saida: path.join(saida, 'prototipos-anterior'), recorte: { telas: telasAlteradas } });
+        await registrar('prototipos-anterior', (await gerarPrototipos(anterior.preparado.modelo, anterior.preparado.config, { specs: anterior.preparado.specs, saida: path.join(saida, 'prototipos-anterior'), recorte: { telas: telasAlteradas } })).paginas);
       }
-      for (const f of await listar(path.join(saida, 'prototipos'))) gerados.add(`prototipos/${f}`);
-      for (const f of await listar(path.join(saida, 'prototipos-anterior'))) gerados.add(`prototipos-anterior/${f}`);
       for (const pg of d.paginas) if (pg.prototipo?.html) await gravar(pg.prototipo.html, await readFile(path.join(p.specs, pg.prototipo.modulo, path.basename(pg.prototipo.html))));
 
       await gravar('recursos/prumo-docs.css', cssTokens + cssDocs);

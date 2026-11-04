@@ -522,4 +522,7 @@ function iniciar() {
   else chegada();
 }
 
+// Gancho para medir a busca nos testes de desempenho (CT-P06).
+(window as unknown as { prumoBuscar: typeof buscar }).prumoBuscar = buscar;
+
 iniciar();

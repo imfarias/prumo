@@ -23,6 +23,14 @@ const ATRIBUTOS: Record<string, string[]> = { a: ['href', 'title'], img: ['src',
 export const escapar = (t: string) => t.replace(/&(?![a-zA-Z]+;|#\d+;|#x[0-9a-fA-F]+;)/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const escaparAtributo = (t: string) => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+const decodificar = (t: string) => {
+  try {
+    return decodeURI(t);
+  } catch {
+    return t;
+  }
+};
+
 /** URL de link aceita: âncora, relativa ou https. Nunca javascript:, data:, vbscript:, file:. */
 function hrefSeguro(href: string): boolean {
   const h = href.trim().toLowerCase().replace(/[\u0000-\u001f\s]/g, '');
@@ -42,7 +50,7 @@ function atributosLink(href: string, o: OpcoesMarkdown, titulo?: string): string
   if (href.startsWith('#')) destino = o.linkDe(href) ?? { href, quebrado: false };
   if (!hrefSeguro(destino.href)) return ' data-removido="href"';
   const partes = [` href="${escaparAtributo(destino.href)}"`];
-  if (destino.rota) partes.push(` data-rota="${escaparAtributo(destino.rota)}"`);
+  if (destino.rota) partes.push(` data-rota="${escaparAtributo(decodificar(destino.rota))}"`);
   if (destino.previa) partes.push(` data-previa="${escaparAtributo(destino.previa)}"`);
   if (destino.quebrado) partes.push(' data-quebrado="true"');
   if (titulo) partes.push(` title="${escaparAtributo(titulo)}"`);

@@ -22,9 +22,7 @@
 
 <section aria-labelledby="verificacao-titulo" data-testid="docs-verificacao">
 <h2 id="verificacao-titulo">Verificação</h2>
-{% set erros = achados | selectattr('severidade', 'equalto', 'erro') | list %}
-{% set avisos = achados | selectattr('severidade', 'equalto', 'aviso') | list %}
-<p>{{ erros.length }} {{ 'erro' if erros.length == 1 else 'erros' }}, {{ avisos.length }} {{ 'aviso' if avisos.length == 1 else 'avisos' }}.</p>
+<p>{{ totais.erros }} {{ 'erro' if totais.erros == 1 else 'erros' }}, {{ totais.avisos }} {{ 'aviso' if totais.avisos == 1 else 'avisos' }}.</p>
 {% if achados.length %}
 <div class="tabela" role="region" aria-label="Achados da verificação" tabindex="0"><table>
 <thead><tr><th scope="col">Severidade</th><th scope="col">Onde</th><th scope="col">Código</th><th scope="col">Mensagem</th></tr></thead>

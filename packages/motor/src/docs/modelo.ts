@@ -293,7 +293,8 @@ export function modeloDaDocumentacao(p: Preparado, o: OpcoesModelo): Documentaca
     },
     achados: (o.achados ?? []).filter((x) => x.severidade !== 'info').map((x) => {
       const pg = paginas.find((y) => y.relativo === x.arquivo);
-      const f = pg && x.linha ? filhoDaLinha(porEndereco.get(pg.endereco.normalize('NFC'))!, x.linha) : undefined;
+      const arq = pg ? porEndereco.get(pg.endereco.normalize('NFC')) : undefined;
+      const f = arq && x.linha ? filhoDaLinha(arq, x.linha) : undefined;
       return { ...x, href: pg ? (o.modo === 'pasta' ? `f/${pg.arquivo}${f ? `#c-${f.posicao}` : ''}` : rotaFuncionalidade(pg.endereco, f?.posicao)) : undefined };
     }),
     numeros: {

@@ -66,7 +66,7 @@ export interface OpcoesPdf {
 }
 
 /** PDF em duas passadas: a 1ª descobre a página de cada funcionalidade; a 2ª escreve o sumário (RN-60). */
-export async function gerarPdf(specs: string, o: OpcoesPdf): Promise<{ arquivo: string; paginas: number }> {
+export async function gerarPdf(specs: string, o: OpcoesPdf): Promise<{ arquivo: string; paginas: number; sumario: Map<string, number> }> {
   const { p, documentacao: d, anterior } = await prepararDocumentacao(specs, { projeto: o.projeto, comparar: o.comparar, modo: 'pasta' });
   const temp = await mkdtemp(path.join(os.tmpdir(), 'prumo-pdf-'));
   const nav = o.navegador ?? new NavegadorPlaywright();
@@ -130,7 +130,7 @@ export async function gerarPdf(specs: string, o: OpcoesPdf): Promise<{ arquivo: 
     const saida = path.resolve(o.saida);
     await gravarSeMudou(saida, final);
     const doc = await PDFDocument.load(final);
-    return { arquivo: saida, paginas: doc.getPageCount() };
+    return { arquivo: saida, paginas: doc.getPageCount(), sumario: new Map([...destinos].filter(([k]) => k.startsWith('f-'))) };
   } finally {
     await nav.fechar().catch(() => {});
     await anterior?.limpar();

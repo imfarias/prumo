@@ -35,8 +35,11 @@ export async function prepararVersaoAnterior(specs: string, valor: string): Prom
   if (pasta) return { preparado: await preparar(pasta), rotulo: path.basename(pasta), limpar: async () => {} };
   {
     let topo: string;
+    let rel: string;
     try {
       topo = String(await git(specs, ['rev-parse', '--show-toplevel'])).trim();
+      // O prefixo vem do próprio Git: evita comparar caminho curto (8.3) com longo no Windows.
+      rel = String(await git(specs, ['-c', 'core.quotepath=off', 'rev-parse', '--show-prefix'])).trim().replace(/\/$/, '');
     } catch (e) {
       if (e instanceof ErroPrumo) throw e;
       throw new ErroPrumo('DOC-08', `As especificações não estão num repositório Git, e "${valor}" não é uma pasta. Fora do Git, informe uma pasta com a versão anterior.`);
@@ -47,7 +50,6 @@ export async function prepararVersaoAnterior(specs: string, valor: string): Prom
       if (e instanceof ErroPrumo) throw e;
       throw new ErroPrumo('DOC-07', `Versão anterior não encontrada: ${valor}. Informe uma branch, tag ou commit, ou uma pasta de especificações.`);
     }
-    const rel = path.relative(topo, specs).split(path.sep).join('/');
     const lista = String(await git(topo, ['-c', 'core.quotepath=off', 'ls-tree', '-r', '-z', '--name-only', valor, '--', rel || '.'])).split('\0').filter(Boolean);
     const temp = await mkdtemp(path.join(os.tmpdir(), 'prumo-anterior-'));
     const destino = path.join(temp, rel ? path.basename(rel) : 'especificacoes');

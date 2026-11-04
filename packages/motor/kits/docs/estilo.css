@@ -21,7 +21,7 @@ code, pre { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; fon
 .topo .marca small { font: 400 13px var(--fonte-texto); color: var(--menu-texto); margin-left: 4px; }
 .busca { position: relative; flex: 1; max-width: 560px; margin-left: auto; }
 .busca input { width: 100%; min-height: 42px; padding: 8px 12px; border: 2px solid transparent; font: inherit; color: var(--texto); background: var(--fundo); }
-.busca input:focus { border-color: var(--destaque); outline: none; }
+.busca input:focus-visible { outline: 3px solid var(--destaque); outline-offset: 2px; }
 .busca ul { position: absolute; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 0; list-style: none; background: var(--fundo); color: var(--texto); border: 1px solid var(--borda-campo); box-shadow: 0 8px 24px rgb(0 0 0 / 0.25); max-height: 70vh; overflow: auto; }
 .busca li { padding: 10px 14px; border-bottom: 1px solid var(--linha); cursor: pointer; }
 .busca li[aria-selected="true"] { background: var(--primaria-clara); outline: 2px solid var(--primaria); outline-offset: -2px; }
@@ -139,7 +139,7 @@ html[data-tema="contraste"] .botao.primario, html[data-tema="contraste"] .botao[
 html[data-tema="contraste"] ins, html[data-tema="contraste"] del { color: #fff; }
 
 @media (max-width: 900px) {
-  .corpo { grid-template-columns: 1fr; }
+  .corpo { grid-template-columns: minmax(0, 1fr); }
   .menu { display: none; position: static; height: auto; }
   .menu.aberto { display: block; }
   .botao-menu { display: inline-flex; align-items: center; }

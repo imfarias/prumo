@@ -20,6 +20,15 @@
         ],
         "createdAt": "2026-11-04T12:41:17.041Z",
         "reason": "falso positivo: o arquivo monta <img> em template string com src validado por srcSeguro/imagemDe; não é marcação de página"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "packages/motor/test/docs/piloto.test.ts"
+        ],
+        "createdAt": "2026-11-04T13:08:00.563Z",
+        "reason": "falso positivo: expressão regular que conta <img> no HTML do Pirilampo dentro de um teste"
       }
     ]
   }
