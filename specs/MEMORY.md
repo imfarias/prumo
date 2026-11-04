@@ -41,7 +41,7 @@
 
 - [2026-11-04] [Usuário] Caixas de mensagem (`.aviso`) mantêm a borda lateral colorida; decisão do usuário.
 
-- [2026-11-04] [Requisito] O Pirilampo atual: rotas `#!/feature/:feature/:search*?` e `#/scenario/:feature/:id`; link de cenário abre a regra numa janela com "Acessar Feature"; busca typeahead por frases; protótipo `.html` em iframe (`#!/html/…`); comparação com `master` (ícones NEW/DIFFERENT no menu). A 0002 preserva todos menos a comparação (0004).
+- [2026-11-04] [Requisito] O Pirilampo atual: rotas `#!/feature/:feature/:search*?` e `#/scenario/:feature/:id`; link de cenário abre a regra numa janela com "Acessar Feature"; busca typeahead por frases; protótipo `.html` em iframe (`#!/html/…`); comparação com `master` (ícones NEW/DIFFERENT no menu). A 0002 preserva todos, inclusive a comparação (o usuário usa; trazida da 0004 para a 0002 em 2026-11-04). Saída no mesmo caminho do Pirilampo (`html/index.html`) e prévia de regra em janela, confirmados pelo usuário.
 
 ## Glossário do Domínio
 - Feature / Funcionalidade: arquivo `.feature` que descreve uma tela (ou uma regra/mensagem de apoio).

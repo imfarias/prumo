@@ -1,4 +1,4 @@
-# 0002 — Documentação navegável (substitui o Pirilampo), busca, rastreabilidade e PDF
+# 0002 — Documentação navegável (substitui o Pirilampo), busca, rastreabilidade, comparação de versões e PDF
 
 **Status:** Especificado · **Data:** 2026-11-04 · **Fase do pedido:** 2 de 5
 
@@ -14,11 +14,13 @@ documentação navegável que substitui a do Pirilampo:
 - todos os **links antigos** (`#/scenario/…`, `#!/feature/…`) abrindo o destino certo;
 - **busca** no texto todo;
 - **rastreabilidade** de regras, listas e mensagens ("usada em" e Matriz);
+- **comparação com a versão anterior** (pasta ou referência do Git), como o Pirilampo faz com a `master`:
+  novo, alterado e removido marcados no menu, e o trecho alterado destacado;
 - **PDF** por funcionalidade, por módulo ou de tudo.
 
 Funciona offline, abre por `file://` e sai em dois modos: site em pasta ou arquivo único.
 
-**Critérios do pedido atendidos aqui:** §8.4 (conteúdo e links do Pirilampo), §8.6 (busca em menos de
+**Critérios do pedido atendidos aqui:** §8.8 (comparar com a versão anterior, parte da CLI), §8.4 (conteúdo e links do Pirilampo), §8.6 (busca em menos de
 200 ms), §8.7 (PDF com capa, sumário e sem tabela cortada), §8.9 (acessibilidade da documentação) e §8.11 (offline).
 
 ## 2. Atores
@@ -64,6 +66,9 @@ Funciona offline, abre por `file://` e sai em dois modos: site em pasta ou arqui
 | FA-10 | Verificação com erros | A documentação é gerada mesmo assim; a página inicial mostra o resumo dos achados com link para cada um. `--estrito` faz sair com 1 |
 | FA-11 | Funcionalidade com erro de sintaxe | Entra no menu marcada como "com erro"; a página mostra o erro com a linha e o texto bruto do arquivo |
 | FA-12 | Busca sem resultado | Mensagem "Nenhum resultado para "{termo}"" e dica (sem acento, menos palavras) |
+| FA-14 | `prumo docs --comparar <pasta-ou-ref>` (ou `documentacao.comparar_com`) | Compara com a versão anterior (seção 6.8). `<ref>` é uma branch, tag ou commit do repositório Git que contém as especificações (ex.: `master`, `v1.0`); `<pasta>` é uma cópia da pasta de especificações |
+| FA-15 | Referência do Git inexistente ou pasta sem features | Erro de uso: "Versão anterior não encontrada: {valor}. Informe uma branch, tag ou commit, ou uma pasta de especificações." (código 2) |
+| FA-16 | Specs fora de um repositório Git e `--comparar` com referência | Erro de uso explicando que só pasta é aceita fora do Git |
 | FA-13 | Arquivo único passa de 50 MB | Aviso sugerindo o modo pasta (protótipos e imagens pesam) |
 
 ## 6. Telas
@@ -120,7 +125,20 @@ arquivo:linha na página da funcionalidade).
 | Rodapé | Projeto, versão e "página X de Y" |
 | Links | Links internos do PDF levam à página da funcionalidade/regra dentro do próprio PDF |
 
-### 6.6 Busca
+### 6.6 Comparação com a versão anterior
+
+| Item | Regra |
+|---|---|
+| Unidade | Funcionalidade (arquivo `.feature`, identificado pelo endereço `{Pasta}_{Arquivo}`) e, dentro dela, cada filho (Contexto, Cenário, Esquema), pareado pelo **título** (não pela posição, que muda quando se insere um cenário) |
+| Situações | **Nova** (só na versão atual), **Alterada** (texto diferente, ignorando espaços no fim da linha e BOM), **Removida** (só na anterior), **Sem mudança** |
+| Menu | Ícone e texto ("nova", "alterada") ao lado da funcionalidade e da pasta que contém mudanças; nunca só cor |
+| Página da funcionalidade | Faixa no topo "Alterada em relação a {versão anterior}" com: botão **Ver versão anterior** (lado a lado) e **Ver mudanças** (texto com inclusões e exclusões destacadas por palavra); cenários novos/alterados marcados; cenários removidos listados ao fim |
+| Página "O que mudou" | Lista de funcionalidades novas, alteradas e removidas, com contagem de cenários mudados e link; regras/listas/mensagens mudadas destacadas à parte |
+| Protótipo | Quando a tela mudou, opção de ver o protótipo da versão anterior (gerado da pasta/ref anterior) ao lado do atual |
+| PDF | Opção `--so-mudancas` gera o PDF só com o que é novo ou alterado, com as marcações |
+| Acessibilidade | Inclusões em `<ins>` e exclusões em `<del>`, com texto oculto "incluído"/"excluído"; contraste AA nas marcações |
+
+### 6.7 Busca
 
 | Item | Regra |
 |---|---|
@@ -132,7 +150,7 @@ arquivo:linha na página da funcionalidade).
 | Desempenho | < 200 ms por consulta com toda a especificação do Vale-Cultura (índice local) |
 | Acessibilidade | Combobox ARIA (`role="combobox"`, `aria-expanded`, `aria-activedescendant`); total de resultados anunciado em `aria-live` |
 
-### 6.7 Mensagens da CLI
+### 6.8 Mensagens da CLI
 
 | Código | Texto |
 |---|---|
@@ -141,6 +159,7 @@ arquivo:linha na página da funcionalidade).
 | DOC-03 | "PDF gerado: {páginas} páginas · {caminho}" |
 | DOC-04 | "Servindo em http://127.0.0.1:{porta} — Ctrl+C para parar." |
 | DOC-05 | "A porta {porta} está ocupada; use --porta." |
+| DOC-06 | "Comparado com {versão}: {n} novas, {m} alteradas, {k} removidas." |
 
 ## 7. Regras de Negócio
 
@@ -169,6 +188,13 @@ arquivo:linha na página da funcionalidade).
 - **RN-60** PDF: o mesmo conteúdo, a partir das páginas da documentação com CSS de impressão; numeração de páginas
   e sumário com o número real de página de cada item.
 - **RN-61** `prumo servir` escuta só em `127.0.0.1`; porta padrão 4300 (`--porta`); recarga por evento do servidor.
+- **RN-62** Versão anterior por referência do Git: o Prumo lê os arquivos com `git show <ref>:<caminho>` (sem alterar o
+  diretório de trabalho, sem checkout); o caminho é o da pasta de especificações relativo à raiz do repositório.
+- **RN-63** Pareamento: funcionalidade pelo endereço; filho pelo título normalizado (sem acento/caixa); títulos repetidos
+  pareiam pela ordem. Renomear o arquivo conta como removida + nova (com aviso "possível renomeação" quando o conteúdo é ≥ 80% igual).
+- **RN-64** O diff é por palavra, sobre o texto renderizado de cada bloco (passos, tabelas, descrição), para não marcar
+  realinhamento de tabela como mudança.
+- **RN-65** A comparação não muda os endereços: os links (antigos e novos) apontam sempre para a versão atual.
 
 ## 8. Permissões
 
@@ -184,6 +210,7 @@ Não há perfis. Escreve só na pasta de saída da documentação, no arquivo PD
 | `pdf` | `retrato` \| `paisagem` | `retrato` | Orientação do PDF |
 | `prototipo_aberto` | booleano | `true` | Bloco do protótipo começa aberto |
 | `saida` | caminho | `../html` | Pasta da documentação (relativa às specs) |
+| `comparar_com` | ref do Git ou caminho | nenhum | Versão anterior padrão (`--comparar` sobrepõe; `--sem-comparar` desliga) |
 | `embutir_imagens` | booleano | do `config.properties` | Ignorado no modo pasta; no arquivo único sempre embute |
 
 ### 9.2 Saída (modo pasta)
@@ -217,12 +244,12 @@ Gerado no build (sem servidor): documentos `{id, tipo, titulo, trecho, endereco,
 ## 11. Dependências
 
 - 0001 (motor, modelo, protótipos, navegador).
-- MiniSearch 7.2.0 (MIT) para o índice; esbuild para empacotar o JS; markdown-it para as descrições.
+- MiniSearch 7.2.0 (MIT) para o índice; esbuild para empacotar o JS; markdown-it para as descrições; diff 9.0.0 (BSD-3) para a comparação.
+- Git instalado, só quando `--comparar` recebe uma referência.
 - Saída do Pirilampo do piloto (no WSL, só leitura) para o teste de equivalência de conteúdo e de links.
 
 ## 12. Fora de Escopo
 
-- Comparação com versão anterior (pasta ou tag do Git) — fase 4 (0004).
 - Publicação automática do site (GitLab Pages, servidor do MinC) e geração a cada MR — 0005.
 - Programa de computador — 0003.
 - Edição dos requisitos pela documentação.
@@ -237,7 +264,7 @@ Gerado no build (sem servidor): documentos `{id, tipo, titulo, trecho, endereco,
 
 | # | Dúvida | Impacto | Proposta padrão |
 |---|---|---|---|
-| D-01 | O Pirilampo atual compara com a branch `master` (marca funcionalidades novas e alteradas no menu e mostra o diff). Isso é usado hoje? | Médio: se for usado, a troca pelo Prumo perde a função até a 0004 | Deixar para a 0004 (comparação de versões), como no plano |
-| D-02 | A saída padrão substitui o `3 - Requisitos/html/index.html` do Pirilampo (mesmo caminho, para os links enviados continuarem valendo)? | Alto para a transição | Sim, mesmo caminho; o Prumo só troca o `index.html` e avisa |
-| D-03 | Ao clicar num link de regra, manter a prévia em janela, como o Pirilampo faz hoje? | Baixo | Sim, com Esc e retorno do foco; "Abrir" leva à página |
+| D-01 | ~~A comparação com a `master` é usada?~~ Resolvida: sim, entra na 0002 (seção 6.6) | — | — |
+| D-02 | ~~Substituir o `html/index.html` do Pirilampo?~~ Resolvida: sim, mesmo caminho (RN-50) | — | — |
+| D-03 | ~~Manter a prévia em janela?~~ Resolvida: sim (FA-05) | — | — |
 | D-04 | Onde a documentação será publicada (GitLab Pages, servidor interno)? | Só 0005 | Gerar o site; publicação fica para a 0005 |
