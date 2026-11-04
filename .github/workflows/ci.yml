@@ -41,9 +41,13 @@ jobs:
       - run: docker build -f docker/Dockerfile -t prumo:ci .
       - name: Rodar o exemplo na imagem
         run: |
-          cp -r exemplos/exemplo-ficticio /tmp/specs && find /tmp/specs -name '*.png' -delete && chmod -R a+w /tmp/specs
+          cp -r exemplos/exemplo-ficticio /tmp/specs && find /tmp/specs -name '*.png' -delete && chmod -R a+w /tmp/specs && mkdir -p /tmp/html && chmod a+w /tmp/html
           docker run --rm -v /tmp/specs:/docs prumo:ci capturar --specs /docs --saida /tmp/saida
           test -f /tmp/specs/01_Portal/02_Portal_Lista_Parceiras.png
+          docker run --rm -v /tmp:/trabalho -w /trabalho prumo:ci docs --specs /trabalho/specs
+          test -f /tmp/html/index.html
+          docker run --rm -v /tmp:/trabalho -w /trabalho prumo:ci pdf --specs /trabalho/specs --saida /trabalho/tudo.pdf
+          test -s /tmp/tudo.pdf
       - name: Publicar no GHCR (tags v*)
         if: startsWith(github.ref, 'refs/tags/v')
         run: |

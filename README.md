@@ -4,8 +4,9 @@ Gera protótipos de tela, documentação navegável e verificação dos requisit
 especificações em Gherkin (`.feature`), no mesmo formato usado com o Pirilampo. Nenhum arquivo
 de especificação existente precisa mudar.
 
-> Fase 1 de 5 pronta: verificação, protótipos HTML e PNG pela linha de comando e imagem Docker.
-> Documentação navegável, programa de computador e kit gov.br vêm nas próximas fases ([`specs/INDEX.md`](specs/INDEX.md)).
+> Fases 1 e 2 de 5 prontas: verificação, protótipos HTML e PNG, documentação navegável (substitui o
+> Pirilampo), comparação de versões e PDF, pela linha de comando e pela imagem Docker. Programa de
+> computador e kit gov.br vêm nas próximas fases ([`specs/INDEX.md`](specs/INDEX.md)).
 
 ## O que faz hoje
 
@@ -17,7 +18,15 @@ de especificação existente precisa mudar.
   com a identidade do `projeto.yml`, fontes embutidas e dados fictícios válidos. Cada decisão automática fica
   registrada em `modelo/telas.json` ("este campo virou seleção por causa da LOV-06").
 - **Captura:** o PNG de cada tela, a 1440 px, no caminho que o cenário `@prototipo` já referencia.
-- **Comparação:** relatório lado a lado entre os PNGs atuais e os gerados, com a diferença por tela.
+- **Comparação de PNGs:** relatório lado a lado entre os PNGs atuais e os gerados, com a diferença por tela.
+- **Documentação navegável:** no lugar do `html/index.html` do Pirilampo, em site de pasta ou arquivo único, abrindo
+  por `file://`. Os links antigos (`#/scenario/…`, `#!/feature/…`) continuam valendo. Cada funcionalidade traz o
+  protótipo clicável com os estados; os links de regras abrem uma prévia. Há busca (`/` ou `Ctrl+K`), "Usada em" e
+  Matriz de rastreabilidade, e "Copiar link" por cenário.
+- **Comparação de versões:** com uma pasta ou com uma branch, tag ou commit do Git. Marca o que é novo, alterado e
+  removido, destaca o trecho mudado e mostra a versão anterior lado a lado.
+- **PDF:** de tudo, de módulos ou de funcionalidades, com capa, sumário numerado e tabelas sem corte.
+- **`prumo servir`:** documentação em `http://127.0.0.1:4300`, recarregada ao salvar.
 
 ## Uso
 
@@ -48,7 +57,19 @@ node apps/cli/dist/main.js comparar-png --specs "3 - Requisitos/Especificações
 node apps/cli/dist/main.js migrar-config --specs "3 - Requisitos/Especificações"
 ```
 
-Opções comuns: `--projeto <arquivo>`, `--modulo <pasta>` e `--tela <nome>` (repetíveis), `--formato json`,
+```bash
+node apps/cli/dist/main.js docs --specs "3 - Requisitos/Especificações" [--arquivo-unico] [--comparar master]
+```
+
+```bash
+node apps/cli/dist/main.js pdf --specs "3 - Requisitos/Especificações" --saida especificacao.pdf [--modulo 04_Cadastro_Beneficiária]
+```
+
+```bash
+node apps/cli/dist/main.js servir --specs "3 - Requisitos/Especificações"
+```
+
+Opções comuns: `--projeto <arquivo>`, `--modulo <pasta>` e `--tela <nome>` (repetíveis), `--comparar <pasta-ou-ref>`, `--formato json`,
 `--avisos-quebram`, `--largura <px>`, `--forcar`, `--verboso`. Códigos de saída: 0 ok, 1 verificação com
 erro, 2 erro de uso, 3 falha inesperada.
 
