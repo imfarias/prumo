@@ -64,7 +64,7 @@ localmente via `css_adicional`. `COMPONENTS.md` atualizado com macros, utilitár
 
 🟡 Importante
 1. **CI não executado:** a branch está só local. Enviar e conferir os jobs Ubuntu, Windows e Docker antes do merge.
-2. **Estilo da caixa de mensagem:** o verificador de design aponta a borda lateral grossa (`.aviso`, `estilo.css`). Mantida até o usuário decidir (pergunta feita em 2026-11-03).
+2. ~~Estilo da caixa de mensagem~~ — o usuário decidiu manter a borda lateral (2026-11-04); exceção registrada em `.impeccable/config.json`.
 3. ~~README ainda descrevia o uso como "planejado"~~ — atualizado com a CLI real.
 
 🔵 Sugestão (propostas para fases seguintes)
@@ -77,7 +77,7 @@ localmente via `css_adicional`. `COMPONENTS.md` atualizado com macros, utilitár
 
 - [x] Atualizar o README (🟡 3)
 - [ ] Enviar a branch e abrir o PR; conferir o CI (🟡 1)
-- [ ] Decisão do usuário sobre a borda das mensagens (🟡 2)
+- [x] Decisão do usuário sobre a borda das mensagens (🟡 2): manter
 - [ ] Iniciar a 0002 (documentação navegável)
 
 ## 8. Lições para a MEMORY

@@ -39,6 +39,8 @@
 - [2026-11-04] [Líder] Nunca rodar `prumo capturar` na pasta do piloto: sobrescreve os PNGs feitos à mão. Para comparar, usar `comparar-png` (captura em pasta temporária).
 - [2026-11-04] [Líder] Propostas para a 0004: layout `janela_sobre`, selo de situação, `logo_claro` (06-final-review, seção 6).
 
+- [2026-11-04] [Usuário] Caixas de mensagem (`.aviso`) mantêm a borda lateral colorida; decisão do usuário.
+
 ## Glossário do Domínio
 - Feature / Funcionalidade: arquivo `.feature` que descreve uma tela (ou uma regra/mensagem de apoio).
 - Tela: unidade de protótipo derivada de uma feature com cenário `@prototipo`.
