@@ -41,6 +41,8 @@
 
 - [2026-11-04] [Usuário] Caixas de mensagem (`.aviso`) mantêm a borda lateral colorida; decisão do usuário.
 
+- [2026-11-04] [Requisito] O Pirilampo atual: rotas `#!/feature/:feature/:search*?` e `#/scenario/:feature/:id`; link de cenário abre a regra numa janela com "Acessar Feature"; busca typeahead por frases; protótipo `.html` em iframe (`#!/html/…`); comparação com `master` (ícones NEW/DIFFERENT no menu). A 0002 preserva todos menos a comparação (0004).
+
 ## Glossário do Domínio
 - Feature / Funcionalidade: arquivo `.feature` que descreve uma tela (ou uma regra/mensagem de apoio).
 - Tela: unidade de protótipo derivada de uma feature com cenário `@prototipo`.
@@ -49,6 +51,7 @@
 - Estado: variação de uma tela derivada de um cenário (sucesso, erro com MSG, vazio, sem permissão).
 - RNG / LOV / MSG / E-mail: regra de negócio, lista de valores, mensagem de interface e mensagem de e-mail; cada uma é um cenário dos arquivos de apoio.
 - Override: ajuste por tela em `telas.overrides.yml`, versionado, aplicado sobre a inferência.
+- Prévia: janela com o conteúdo de uma regra/mensagem aberta a partir de um link (documentação).
 - Achado: item da verificação (erro, aviso ou informação) com `arquivo:linha` e motivo.
 
 ## Convenções de Código
