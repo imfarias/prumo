@@ -1,9 +1,6 @@
-import { createRequire } from 'node:module';
-import path from 'node:path';
+import { arquivoFonte } from '../util/recursos.js';
 import type { Achado, ConfigProjeto } from '../config/esquema.js';
 import { contraste, misturar } from './contraste.js';
-
-const require = createRequire(import.meta.url);
 
 /** Fontes embutidas (SIL OFL): só subconjunto latino, pesos usados pelo kit. */
 export const FONTES_EMBUTIDAS: Record<string, { pacote: string; arquivos: { peso: number; estilo: string; nome: string }[] }> = {
@@ -25,8 +22,7 @@ export const FONTES_EMBUTIDAS: Record<string, { pacote: string; arquivos: { peso
 };
 
 export function caminhoFonte(familia: string, nome: string): string {
-  const pacote = FONTES_EMBUTIDAS[familia]!.pacote;
-  return path.join(path.dirname(require.resolve(`${pacote}/package.json`)), 'files', nome);
+  return arquivoFonte(FONTES_EMBUTIDAS[familia]!.pacote, nome);
 }
 
 /** Famílias usadas pela identidade que existem embutidas; as demais caem na fonte do sistema com aviso. */

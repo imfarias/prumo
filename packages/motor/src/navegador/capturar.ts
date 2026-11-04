@@ -8,6 +8,7 @@ import { dentroDe } from '../util/caminhos.js';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import type { Navegador } from './navegador.js';
+import { andar, type OpcoesExecucao } from '../util/execucao.js';
 
 export interface ResultadoCaptura {
   tela: string;
@@ -32,7 +33,7 @@ function mesmaImagem(a: Buffer, b: Buffer): boolean {
 export async function capturar(
   paginas: PaginaGerada[],
   navegador: Navegador,
-  o: { specs: string; largura: number; forcar?: boolean; paralelo?: number; aoGravar?: (r: ResultadoCaptura) => void },
+  o: { specs: string; largura: number; forcar?: boolean; paralelo?: number; aoGravar?: (r: ResultadoCaptura) => void } & OpcoesExecucao,
 ): Promise<ResultadoCaptura[]> {
   const alvos = paginas.filter((p) => p.destinoPng);
   const resultados: ResultadoCaptura[] = new Array(alvos.length);
@@ -41,6 +42,7 @@ export async function capturar(
     while (proximo < alvos.length) {
       const i = proximo++;
       const p = alvos[i]!;
+      andar(o, `Capturando: ${p.tela}`, i, alvos.length);
       const destino = dentroDe(o.specs, p.destinoPng!);
       const png = await navegador.capturar(pathToFileURL(p.arquivo).href, { largura: o.largura });
       let situacao: ResultadoCaptura['situacao'] = 'gravado';
@@ -51,5 +53,6 @@ export async function capturar(
     }
   };
   await Promise.all(Array.from({ length: Math.min(o.paralelo ?? 4, alvos.length) }, trabalhador));
+  andar(o, 'Capturas concluídas', alvos.length, alvos.length);
   return resultados;
 }

@@ -28,3 +28,7 @@ export { compararVersoes, diffHtml } from './docs/comparar.js';
 export { prepararVersaoAnterior } from './docs/anterior.js';
 export { renderizarMarkdown, renderizarInline } from './docs/markdown.js';
 export type * from './docs/tipos.js';
+export { editarYaml, type Mudanca, type LinhaDiff, type Caminho } from './config/editar.js';
+export { criarProjetoNovo } from './config/novo.js';
+export { andar, verificarCancelamento, type Andamento, type OpcoesExecucao } from './util/execucao.js';
+export { diretorioKits, raizRecursos } from './util/recursos.js';

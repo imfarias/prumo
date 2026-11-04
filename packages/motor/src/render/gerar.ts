@@ -1,5 +1,6 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { diretorioKits } from '../util/recursos.js';
+import { andar, type OpcoesExecucao } from '../util/execucao.js';
 import nunjucks from 'nunjucks';
 import type { Achado, ConfigProjeto } from '../config/esquema.js';
 import { criarGerador, valorFicticio, type Gerador } from '../dados/ficticios.js';
@@ -27,13 +28,13 @@ export function dentroDoRecorte(t: Tela, r?: Recorte): boolean {
   return true;
 }
 
-const KITS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../kits');
+const KITS = () => diretorioKits();
 
 export function diretorioDoKit(config: ConfigProjeto, achados: Achado[], arquivo: string): string {
   if (config.identidade.design_system === 'govbr') {
     achados.push({ severidade: 'aviso', codigo: 'identidade/kit', arquivo, mensagem: 'O kit govbr chega na fase 4; usando o kit proprio com os tokens do projeto.' });
   }
-  return path.join(KITS, 'proprio');
+  return path.join(KITS(), 'proprio');
 }
 
 const seg = (s: string) => encodeURIComponent(s);
@@ -257,7 +258,7 @@ export function contextoDaPagina(tela: Tela, e: Estado, modelo: ModeloTelas, con
   };
 }
 
-export interface OpcoesGeracao {
+export interface OpcoesGeracao extends OpcoesExecucao {
   specs: string;
   saida: string;
   recorte?: Recorte;
@@ -275,7 +276,8 @@ export async function gerarPrototipos(modelo: ModeloTelas, config: ConfigProjeto
   const paginas: PaginaGerada[] = [];
   const telas = modelo.telas.filter((t) => dentroDoRecorte(t, o.recorte));
 
-  for (const t of telas) {
+  for (const [i, t] of telas.entries()) {
+    andar(o, `Gerando protótipos: ${t.titulo}`, i, telas.length);
     const destinoPng = path.join(o.specs, t.modulo, t.prototipo.imagem ?? `${t.id}.png`);
     if (t.prototipo.html) {
       paginas.push({ tela: t.id, estado: 'padrao', arquivo: path.join(o.specs, t.modulo, t.prototipo.html), destinoPng });
@@ -298,6 +300,7 @@ export async function gerarPrototipos(modelo: ModeloTelas, config: ConfigProjeto
     })),
   }));
   await gravarSeMudou(path.join(o.saida, 'index.html'), limpar(env.render('indice.njk', { projeto: config.projeto, modulos, total: telas.length })));
+  andar(o, 'Protótipos gerados', telas.length, telas.length);
   return { paginas, achados };
 }
 

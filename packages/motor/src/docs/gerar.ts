@@ -2,7 +2,8 @@ import { existsSync } from 'node:fs';
 import { mkdtemp, readdir, readFile, rm, stat, unlink } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { diretorioKits } from '../util/recursos.js';
+import { andar, type OpcoesExecucao } from '../util/execucao.js';
 import MiniSearch from 'minisearch';
 import nunjucks from 'nunjucks';
 import type { Achado } from '../config/esquema.js';
@@ -21,12 +22,12 @@ import { escapar } from './markdown.js';
 import { modeloDaDocumentacao, rotaFuncionalidade } from './modelo.js';
 import type { Documentacao, Modo, NoArvore, PaginaDoc } from './tipos.js';
 
-export const KIT_DOCS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../kits/docs');
-const KIT_PROTOTIPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../kits/proprio');
+export const kitDocs = () => path.join(diretorioKits(), 'docs');
+const kitPrototipo = () => path.join(diretorioKits(), 'proprio');
 const LISTA = '.prumo-arquivos';
 const MIME: Record<string, string> = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff2': 'font/woff2', '.woff': 'font/woff' };
 
-export interface OpcoesDocs {
+export interface OpcoesDocs extends OpcoesExecucao {
   projeto?: string;
   saida?: string;
   arquivoUnico?: boolean;
@@ -53,7 +54,7 @@ export const jsonSeguro = (v: unknown) =>
   JSON.stringify(v).replace(/</g, `${BARRA}u003c`).replace(SEP_LINHA, `${BARRA}u2028`).replace(SEP_PARAGRAFO, `${BARRA}u2029`);
 
 function ambiente() {
-  const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(KIT_DOCS, { noCache: true }), { autoescape: true, trimBlocks: true, lstripBlocks: true, throwOnUndefined: false });
+  const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(kitDocs(), { noCache: true }), { autoescape: true, trimBlocks: true, lstripBlocks: true, throwOnUndefined: false });
   const contem = (no: NoArvore, atual: string): boolean => no.endereco === atual || no.filhos.some((f) => contem(f, atual));
   env.addGlobal('contem', contem);
   return env;
@@ -137,12 +138,16 @@ async function arquivosComErro(p: Preparado, achados: Achado[]) {
 }
 
 export async function prepararDocumentacao(specs: string, o: OpcoesDocs & { modo?: Modo }) {
+  andar(o, 'Lendo as especificações');
   const p = await preparar(specs, { projeto: o.projeto });
   const achados = verificarPreparado(p);
   const modo: Modo = o.modo ?? ((o.arquivoUnico ?? p.config.documentacao.arquivo_unico) ? 'unico' : 'pasta');
   const valor = o.comparar === false ? undefined : (o.comparar ?? (typeof p.config.documentacao.comparar_com === 'string' ? p.config.documentacao.comparar_com : undefined));
   let anterior: VersaoAnterior | undefined;
-  if (valor) anterior = await prepararVersaoAnterior(p.specs, valor);
+  if (valor) {
+    andar(o, `Lendo a versão anterior (${valor})`);
+    anterior = await prepararVersaoAnterior(p.specs, valor);
+  }
   const comparacao = anterior ? compararVersoes(p.arquivos, anterior.preparado.arquivos, anterior.rotulo) : undefined;
   const documentacao = modeloDaDocumentacao(p, { modo, comparacao, anterior: anterior?.preparado, achados, comErro: await arquivosComErro(p, achados) });
   return { p, achados, modo, anterior, documentacao };
@@ -172,8 +177,8 @@ export async function gerarDocumentacao(specs: string, o: OpcoesDocs = {}): Prom
     const recursoLogo = p.config.projeto.logo ? path.resolve(p.specs, p.config.projeto.logo) : undefined;
     const logoExiste = recursoLogo && existsSync(recursoLogo);
     const cssTokens = cssDosTokens(p.config, [], p.arquivoConfig);
-    const cssDocs = await readFile(path.join(KIT_DOCS, 'estilo.css'), 'utf8');
-    const js = await readFile(path.join(KIT_DOCS, 'prumo-docs.js'), 'utf8').catch(() => {
+    const cssDocs = await readFile(path.join(kitDocs(), 'estilo.css'), 'utf8');
+    const js = await readFile(path.join(kitDocs(), 'prumo-docs.js'), 'utf8').catch(() => {
       throw new ErroPrumo('DOC-09', 'O script da documentação não foi compilado. Rode `npm run build` no Prumo.');
     });
     const indice = new MiniSearch(OPCOES_INDICE as never);
@@ -187,7 +192,7 @@ export async function gerarDocumentacao(specs: string, o: OpcoesDocs = {}): Prom
         for (const f of await listar(path.join(dir, '_recursos'))) gerados.add(`${pasta}/_recursos/${f}`);
         for (const pg of paginas) if (pg.arquivo.startsWith(dir)) gerados.add(relativoPosix(saida, pg.arquivo));
       };
-      await registrar('prototipos', (await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida: path.join(saida, 'prototipos'), arquivoConfig: p.arquivoConfig })).paginas);
+      await registrar('prototipos', (await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida: path.join(saida, 'prototipos'), arquivoConfig: p.arquivoConfig, sinal: o.sinal, aoAndamento: o.aoAndamento })).paginas);
       if (anterior && telasAlteradas.length) {
         await registrar('prototipos-anterior', (await gerarPrototipos(anterior.preparado.modelo, anterior.preparado.config, { specs: anterior.preparado.specs, saida: path.join(saida, 'prototipos-anterior'), recorte: { telas: telasAlteradas } })).paginas);
       }
@@ -207,13 +212,14 @@ export async function gerarDocumentacao(specs: string, o: OpcoesDocs = {}): Prom
       await gravar('index.html', env.render('inicio.njk', { ...base('', '#inicio'), tituloPagina: 'Início' }));
       await gravar('matriz.html', env.render('matriz.njk', { ...base('', '#matriz'), tituloPagina: 'Matriz' }));
       if (d.comparacao) await gravar('mudancas.html', env.render('mudancas.njk', { ...base('', '#mudancas'), tituloPagina: 'O que mudou' }));
-      for (const pg of d.paginas) {
+      for (const [i, pg] of d.paginas.entries()) {
+        andar(o, `Gerando páginas: ${pg.titulo}`, i, d.paginas.length);
         await gravar(`f/${pg.arquivo}`, env.render('funcionalidade.njk', { ...base('../', pg.endereco), tituloPagina: pg.titulo, pg }));
       }
     } else {
       const temp = await mkdtemp(path.join(os.tmpdir(), 'prumo-unico-'));
       try {
-        await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida: path.join(temp, 'p'), arquivoConfig: p.arquivoConfig });
+        await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida: path.join(temp, 'p'), arquivoConfig: p.arquivoConfig, sinal: o.sinal, aoAndamento: o.aoAndamento });
         if (anterior && telasAlteradas.length) await gerarPrototipos(anterior.preparado.modelo, anterior.preparado.config, { specs: anterior.preparado.specs, saida: path.join(temp, 'a'), recorte: { telas: telasAlteradas } });
         const prototipos: Record<string, string> = {};
         const usados = new Set<string>();
@@ -231,7 +237,7 @@ export async function gerarDocumentacao(specs: string, o: OpcoesDocs = {}): Prom
         let cssPrototipos = await cssComDados(await readFile(path.join(recP, 'prumo.css'), 'utf8'), recP);
         const adicional = path.join(recP, 'adicional');
         if (existsSync(adicional)) for (const f of await listar(adicional)) if (f.endsWith('.css')) cssPrototipos += '\n' + (await cssComDados((await readFile(path.join(adicional, f), 'utf8')).replace(/@import[^;]+;/g, ''), path.dirname(path.join(adicional, f))));
-        const jsPrototipo = await readFile(path.join(KIT_PROTOTIPO, 'prumo-prototipo.js'), 'utf8');
+        const jsPrototipo = await readFile(path.join(kitPrototipo(), 'prumo-prototipo.js'), 'utf8');
 
         let cssFontes = cssTokens;
         for (const fam of fontesUsadas(p.config, [], p.arquivoConfig)) for (const a of FONTES_EMBUTIDAS[fam]!.arquivos) cssFontes = cssFontes.replace(`url("fontes/${a.nome}")`, `url("${await dataUri(caminhoFonte(fam, a.nome))}")`);
@@ -258,6 +264,7 @@ export async function gerarDocumentacao(specs: string, o: OpcoesDocs = {}): Prom
       }
     }
 
+    andar(o, 'Finalizando');
     // Limpeza segura (RN-50): remove só o que o Prumo gerou antes e não gerou agora.
     const listaAnterior = existsSync(path.join(saida, LISTA)) ? (await readFile(path.join(saida, LISTA), 'utf8')).split('\n').filter(Boolean) : [];
     for (const rel of listaAnterior) {

@@ -18,6 +18,7 @@ import type { ArquivoFeature } from './parser/tipos.js';
 import { dentroDoRecorte, gerarPrototipos, type PaginaGerada, type Recorte } from './render/gerar.js';
 import { gravarSeMudou } from './render/recursos.js';
 import { ErroPrumo } from './util/erros.js';
+import { andar, type OpcoesExecucao } from './util/execucao.js';
 import { ordenar, verificar } from './verificacao/verificar.js';
 
 export interface Preparado {
@@ -58,10 +59,11 @@ export interface ResultadoGeracao {
 }
 
 /** `prumo gerar`: telas.json + HTML por tela e estado. */
-export async function gerar(specs: string, o: { projeto?: string; saida?: string; recorte?: Recorte } = {}): Promise<ResultadoGeracao> {
+export async function gerar(specs: string, o: { projeto?: string; saida?: string; recorte?: Recorte } & OpcoesExecucao = {}): Promise<ResultadoGeracao> {
+  andar(o, 'Lendo as especificações');
   const p = await preparar(specs, o);
   const saida = path.resolve(o.saida ?? path.join(process.cwd(), 'saida', 'prototipos'));
-  const r = await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida, recorte: o.recorte, arquivoConfig: p.arquivoConfig });
+  const r = await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida, recorte: o.recorte, arquivoConfig: p.arquivoConfig, sinal: o.sinal, aoAndamento: o.aoAndamento });
   const arquivoModelo = path.join(path.dirname(saida), 'modelo', 'telas.json');
   await gravarSeMudou(arquivoModelo, serializarModelo(p.modelo));
   const achados = ordenar([...verificarPreparado(p), ...r.achados]);
@@ -71,13 +73,13 @@ export async function gerar(specs: string, o: { projeto?: string; saida?: string
 /** `prumo capturar`: gera e grava os PNGs no caminho que o @prototipo referencia. */
 export async function gerarECapturar(
   specs: string,
-  o: { projeto?: string; saida?: string; recorte?: Recorte; largura?: number; forcar?: boolean; navegador?: Navegador; aoGravar?: (r: ResultadoCaptura) => void } = {},
+  o: { projeto?: string; saida?: string; recorte?: Recorte; largura?: number; forcar?: boolean; navegador?: Navegador; aoGravar?: (r: ResultadoCaptura) => void } & OpcoesExecucao = {},
 ) {
   const g = await gerar(specs, o);
   const nav = o.navegador ?? new NavegadorPlaywright();
   await nav.abrir();
   try {
-    const capturas = await capturar(g.paginas, nav, { specs: g.preparado.specs, largura: o.largura ?? g.preparado.config.largura_captura, forcar: o.forcar, aoGravar: o.aoGravar });
+    const capturas = await capturar(g.paginas, nav, { specs: g.preparado.specs, largura: o.largura ?? g.preparado.config.largura_captura, forcar: o.forcar, aoGravar: o.aoGravar, sinal: o.sinal, aoAndamento: o.aoAndamento });
     return { ...g, capturas, bloqueados: nav.bloqueados() };
   } finally {
     await nav.fechar();
@@ -85,17 +87,17 @@ export async function gerarECapturar(
 }
 
 /** `prumo comparar-png`: captura numa pasta temporária e compara com os PNGs atuais das especificações. */
-export async function compararComAtuais(specs: string, o: { projeto?: string; saida?: string; recorte?: Recorte; navegador?: Navegador } = {}): Promise<{ itens: ItemComparacao[]; relatorio: string }> {
+export async function compararComAtuais(specs: string, o: { projeto?: string; saida?: string; recorte?: Recorte; navegador?: Navegador } & OpcoesExecucao = {}): Promise<{ itens: ItemComparacao[]; relatorio: string }> {
   const saida = path.resolve(o.saida ?? path.join(process.cwd(), 'saida', 'comparacao'));
   const temp = await mkdtemp(path.join(os.tmpdir(), 'prumo-comparar-'));
   try {
     const p = await preparar(specs, o);
-    const r = await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida: path.join(temp, 'html'), recorte: o.recorte, arquivoConfig: p.arquivoConfig });
+    const r = await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida: path.join(temp, 'html'), recorte: o.recorte, arquivoConfig: p.arquivoConfig, sinal: o.sinal, aoAndamento: o.aoAndamento });
     const copia = r.paginas.map((x) => ({ ...x, destinoPng: x.destinoPng ? path.join(temp, 'png', path.relative(p.specs, x.destinoPng)) : undefined }));
     const nav = o.navegador ?? new NavegadorPlaywright();
     await nav.abrir();
     try {
-      await capturar(copia, nav, { specs: temp, largura: p.config.largura_captura, forcar: true });
+      await capturar(copia, nav, { specs: temp, largura: p.config.largura_captura, forcar: true, sinal: o.sinal, aoAndamento: o.aoAndamento });
     } finally {
       await nav.fechar();
     }

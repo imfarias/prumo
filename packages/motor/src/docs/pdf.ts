@@ -12,9 +12,10 @@ import { gravarSeMudou } from '../render/recursos.js';
 import { caminhoFonte, cssDosTokens, FONTES_EMBUTIDAS, fontesUsadas } from '../render/tokens-css.js';
 import { ErroPrumo } from '../util/erros.js';
 import { mesmoTexto } from '../util/texto.js';
-import { KIT_DOCS, prepararDocumentacao } from './gerar.js';
+import { kitDocs, prepararDocumentacao } from './gerar.js';
 import { escapar } from './markdown.js';
 import type { PaginaDoc } from './tipos.js';
+import { andar, type OpcoesExecucao } from '../util/execucao.js';
 
 /** Página de cada destino nomeado (`/Dests`) do PDF gerado pelo Chromium (CT-U06). */
 export function paginasDosDestinos(pdf: Uint8Array | PDFDocument): Promise<Map<string, number>> | Map<string, number> {
@@ -55,7 +56,7 @@ function prefixarAncoras(html: string, id: string, ids: Map<string, string>): st
     });
 }
 
-export interface OpcoesPdf {
+export interface OpcoesPdf extends OpcoesExecucao {
   projeto?: string;
   saida: string;
   recorte?: Recorte;
@@ -67,7 +68,7 @@ export interface OpcoesPdf {
 
 /** PDF em duas passadas: a 1ª descobre a página de cada funcionalidade; a 2ª escreve o sumário (RN-60). */
 export async function gerarPdf(specs: string, o: OpcoesPdf): Promise<{ arquivo: string; paginas: number; sumario: Map<string, number> }> {
-  const { p, documentacao: d, anterior } = await prepararDocumentacao(specs, { projeto: o.projeto, comparar: o.comparar, modo: 'pasta' });
+  const { p, documentacao: d, anterior } = await prepararDocumentacao(specs, { projeto: o.projeto, comparar: o.comparar, modo: 'pasta', sinal: o.sinal, aoAndamento: o.aoAndamento });
   const temp = await mkdtemp(path.join(os.tmpdir(), 'prumo-pdf-'));
   const nav = o.navegador ?? new NavegadorPlaywright();
   try {
@@ -81,14 +82,15 @@ export async function gerarPdf(specs: string, o: OpcoesPdf): Promise<{ arquivo: 
 
     // Recursos: CSS, fontes, imagens e o PNG de cada tela (capturado quando não existe nas especificações).
     const rec = path.join(temp, 'recursos');
-    await gravarSeMudou(path.join(rec, 'prumo-docs.css'), cssDosTokens(p.config, [], p.arquivoConfig) + (await readFile(path.join(KIT_DOCS, 'estilo.css'), 'utf8')));
-    await gravarSeMudou(path.join(rec, 'impressao.css'), await readFile(path.join(KIT_DOCS, 'impressao.css'), 'utf8'));
+    await gravarSeMudou(path.join(rec, 'prumo-docs.css'), cssDosTokens(p.config, [], p.arquivoConfig) + (await readFile(path.join(kitDocs(), 'estilo.css'), 'utf8')));
+    await gravarSeMudou(path.join(rec, 'impressao.css'), await readFile(path.join(kitDocs(), 'impressao.css'), 'utf8'));
     for (const fam of fontesUsadas(p.config, [], p.arquivoConfig)) for (const a of FONTES_EMBUTIDAS[fam]!.arquivos) await gravarSeMudou(path.join(rec, 'fontes', a.nome), await readFile(caminhoFonte(fam, a.nome)));
     for (const [abs, dest] of d.imagens) if (existsSync(abs)) await gravarSeMudou(path.join(rec, ...dest.split('/')), await readFile(abs));
     const logoAbs = p.config.projeto.logo ? path.resolve(p.specs, p.config.projeto.logo) : undefined;
     const logo = logoAbs && existsSync(logoAbs) ? `recursos/logo${path.extname(logoAbs)}` : undefined;
     if (logo) await gravarSeMudou(path.join(temp, logo), await readFile(logoAbs!));
 
+    andar(o, 'Preparando o PDF');
     await nav.abrir();
     const faltam = paginas.filter((pg) => pg.prototipo && !existsSync(pngDe(pg, p.specs)));
     const capturados = new Map<string, string>();
@@ -101,7 +103,7 @@ export async function gerarPdf(specs: string, o: OpcoesPdf): Promise<{ arquivo: 
       }
     }
 
-    const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(KIT_DOCS, { noCache: true }), { autoescape: true, trimBlocks: true, lstripBlocks: true });
+    const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(kitDocs(), { noCache: true }), { autoescape: true, trimBlocks: true, lstripBlocks: true });
     env.addGlobal('contem', () => false);
     const ids = new Map(d.paginas.map((pg) => [pg.arquivo, pg.arquivo.replace(/\.html$/, '')]));
     const corpo = paginas.map((pg) => {
@@ -122,10 +124,12 @@ export async function gerarPdf(specs: string, o: OpcoesPdf): Promise<{ arquivo: 
     const paisagem = (o.orientacao ?? (p.config.documentacao.pdf === 'paisagem' ? 'paisagem' : 'retrato')) === 'paisagem';
 
     await writeFile(arquivoHtml, htmlImpressao, 'utf8');
+    andar(o, 'Montando o PDF (1ª passada)', 1, 2);
     const primeira = await nav.pdf!(pathToFileURL(arquivoHtml).href, { paisagem, rodape });
     const destinos = (await paginasDosDestinos(primeira)) as Map<string, number>;
     const numerado = htmlImpressao.replace(/<span class="pg" data-alvo="([^"]+)">0000<\/span>/g, (_m, alvo: string) => `<span class="pg" data-alvo="${alvo}">${destinos.get(alvo) ?? '—'}</span>`);
     await writeFile(arquivoHtml, numerado, 'utf8');
+    andar(o, 'Numerando o sumário (2ª passada)', 2, 2);
     const final = await nav.pdf!(pathToFileURL(arquivoHtml).href, { paisagem, rodape });
     const saida = path.resolve(o.saida);
     await gravarSeMudou(saida, final);
