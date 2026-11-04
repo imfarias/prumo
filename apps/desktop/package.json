@@ -1,0 +1,23 @@
+{
+  "name": "@prumo/desktop",
+  "productName": "Prumo",
+  "version": "0.1.0",
+  "description": "Gera protótipos, documentação navegável e verificação a partir de especificações Gherkin.",
+  "author": "Vinicius Farias",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "dist/main.mjs",
+  "scripts": {
+    "build": "node scripts/empacotar.mjs",
+    "iniciar": "node scripts/empacotar.mjs && electron .",
+    "dist": "node scripts/empacotar.mjs && electron-builder --config electron-builder.yml"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@preact/signals": "2.11.4",
+    "electron": "45.2.2",
+    "electron-builder": "26.18.0",
+    "preact": "11.1.1"
+  }
+}
