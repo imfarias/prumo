@@ -1,0 +1,110 @@
+/* Kit govbr do Prumo: o que o gov.br DS não traz pronto (grade dos campos, páginas, janela, barra, selo, celular). */
+:root { --prumo-grade: 24px; }
+html, body { margin: 0; }
+body { font-family: Raleway, Rawline, sans-serif; color: var(--color, #333); background: #fff; }
+.sr, .sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.icone { width: 1.1em; height: 1.1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.15em; flex: none; }
+
+.govbr .br-header .marca-govbr { display: inline-flex; align-items: center; text-decoration: none; }
+.govbr .br-header .marca-govbr img { max-height: 48px; width: auto; }
+.govbr .br-header .marca-texto { font-weight: 700; font-size: 20px; color: var(--blue-warm-vivid-70, #1351b4); }
+.govbr .br-header .header-login { display: flex; align-items: center; gap: 12px; }
+.govbr .br-header .pessoa { display: flex; flex-direction: column; font-size: 14px; line-height: 1.2; }
+.govbr .br-header .pessoa small { color: #555; }
+
+.principal { padding-top: var(--prumo-grade); padding-bottom: 48px; min-width: 0; }
+.cabeca h1 { font-size: 32px; font-weight: 600; margin: 8px 0 24px; }
+.br-breadcrumb { margin-top: 8px; }
+.br-breadcrumb .crumb .icone { margin: 0 6px; color: #888; }
+.br-breadcrumb .crumb-list { display: flex; flex-wrap: wrap; align-items: center; list-style: none; padding: 0; margin: 0; }
+.br-breadcrumb .crumb { display: inline-flex; align-items: center; margin: 0; padding: 0; }
+.br-breadcrumb .crumb.home a { padding: 0; }
+.br-message { margin-bottom: 24px; }
+.br-message .icon .icone { width: 28px; height: 28px; }
+.br-message .message-body { margin: 4px 0 0; padding-left: 18px; }
+
+.trabalho-govbr { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 32px; }
+.menu-fixo { padding-top: var(--prumo-grade); }
+.menu-fixo .br-list { display: flex; flex-direction: column; border-right: 1px solid #e6e6e6; }
+.menu-fixo .br-item { display: block; padding: 12px 16px; color: #1351b4; text-decoration: none; }
+.menu-fixo .br-item.active { font-weight: 700; color: #071d41; background: #edf5ff; border-left: 4px solid #1351b4; }
+
+.rodape-govbr { display: flex; justify-content: space-between; gap: 16px; padding-top: 24px; padding-bottom: 24px; }
+
+/* Grade de 12 colunas dos campos (as larguras c3…c12 são as mesmas do kit proprio). */
+.campos { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px 24px; margin-bottom: 24px; }
+.campos > * { grid-column: span 6; min-width: 0; }
+.campos > .c3 { grid-column: span 3; } .campos > .c4 { grid-column: span 4; } .campos > .c6 { grid-column: span 6; }
+.campos > .c8 { grid-column: span 8; } .campos > .c9 { grid-column: span 9; } .campos > .c12 { grid-column: span 12; }
+.br-input select { width: 100%; height: 40px; padding: 0 12px; border: 1px solid #888; border-radius: 6px; background: #fff; font: inherit; color: inherit; }
+.br-input.leitura .valor-leitura { display: block; min-height: 40px; padding: 8px 0; font-weight: 600; }
+.obrig { color: #e52207; margin-left: 2px; }
+.feedback { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.captcha { display: flex; gap: 12px; align-items: center; }
+.captcha .desafio { font: 700 20px/40px monospace; letter-spacing: 4px; padding: 0 12px; background: #f0f0f0; border-radius: 6px; }
+.br-upload .arquivos { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+.br-upload .arquivos li { display: flex; align-items: center; gap: 12px; }
+
+fieldset.secao { border: 0; padding: 0; margin: 0 0 24px; }
+fieldset.secao legend { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
+form.filtros { padding: 24px; margin-bottom: 24px; background: #f8f8f8; border-radius: 6px; }
+form.filtros .campos { margin-bottom: 16px; }
+.acoes { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 24px; }
+.acoes .br-button { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.resumo { margin: 0 0 8px; }
+.vazio { padding: 24px; background: #f8f8f8; border-radius: 6px; margin-bottom: 24px; }
+.tabela-rolavel { overflow-x: auto; }
+.br-table table { width: 100%; border-collapse: collapse; }
+.br-table th, .br-table td { text-align: left; padding: 12px 16px; border-bottom: 1px solid #e6e6e6; }
+.br-table td.num { white-space: nowrap; }
+.acoes-linha { display: flex; gap: 12px; }
+.br-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0 24px; }
+.br-pagination ul { display: flex; gap: 8px; list-style: none; padding: 0; margin: 0; align-items: center; }
+.br-pagination .page { display: inline-flex; min-width: 32px; height: 32px; align-items: center; justify-content: center; border-radius: 50%; }
+.br-pagination .page.active { background: #1351b4; color: #fff; }
+.br-pagination .pagina-passo { padding: 0 8px; white-space: nowrap; }
+.br-pagination .desabilitado { color: #636363; }
+dl.dados { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px 24px; margin: 0 0 24px; }
+dl.dados dt { font-weight: 600; font-size: 14px; } dl.dados dd { margin: 4px 0 0; }
+.api-rota .metodo { font-weight: 700; margin-right: 8px; } pre.json { background: #f8f8f8; padding: 16px; border-radius: 6px; overflow-x: auto; }
+ol.etapas { display: flex; gap: 24px; list-style: none; padding: 0; margin: 0 0 24px; }
+ol.etapas .marca-etapa { display: inline-flex; width: 28px; height: 28px; border-radius: 50%; align-items: center; justify-content: center; background: #e6e6e6; margin-right: 8px; }
+ol.etapas .atual .marca-etapa { background: #1351b4; color: #fff; }
+
+/* Selo de situação (RN-86): br-tag com a cor pelo sentido e sempre com texto. */
+.br-tag.selo { display: inline-block; padding: 2px 12px; border-radius: 999px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.selo-sucesso { background: #e3f5e1; color: #154c21; }
+.selo-erro { background: #fde0db; color: #8b0a03; }
+.selo-aviso { background: #fff5c2; color: #5c4809; }
+.selo-neutro { background: #edeff0; color: #333; }
+
+/* Janela sobre o portal. */
+.janela-fundo { position: fixed; inset: 0; z-index: 0; opacity: .35; pointer-events: none; overflow: hidden; }
+.janela-fundo-conteudo { display: grid; gap: 16px; margin-top: 32px; }
+.janela-fundo-conteudo span { display: block; height: 64px; background: #e6e6e6; border-radius: 6px; }
+.janela { position: relative; z-index: 1; max-width: min(1040px, calc(100% - 32px)); margin: 48px auto; background: #fff; border-radius: 8px; box-shadow: 0 16px 48px rgba(0, 0, 0, .3); }
+.janela-cabeca { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 24px; border-bottom: 1px solid #e6e6e6; }
+.janela-cabeca h1 { margin: 0; font-size: 24px; font-weight: 600; }
+.janela > main { padding: 24px; }
+
+/* Barra do protótipo (só aberto direto; fora da captura e dos iframes). */
+.prumo-barra { position: fixed; right: 16px; bottom: 16px; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: calc(100% - 32px); padding: 8px 12px; background: #071d41; color: #fff; border-radius: 8px; font: 14px/1.4 Raleway, sans-serif; box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
+.prumo-barra button, .prumo-barra select { font: inherit; padding: 4px 12px; border-radius: 100em; border: 1px solid #fff; background: transparent; color: inherit; min-height: 32px; }
+.prumo-barra label, .prumo-barra span, .prumo-barra select { color: #fff; }
+.prumo-barra select { border-radius: 6px; background: #071d41; } .prumo-barra select option { color: #071d41; background: #fff; }
+.prumo-barra button[aria-pressed="true"] { background: #fff; color: #071d41; }
+.prumo-barra :focus-visible { outline: 4px dashed #c2850c; outline-offset: 2px; }
+.prumo-barra [role="status"]:empty { display: none; }
+
+/* Foco visível em tudo (o gov.br usa contorno tracejado). */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible { outline: 4px dashed #c2850c; outline-offset: 2px; }
+
+/* Celular (390 px): uma coluna, menu acima do conteúdo, tabelas roláveis dentro da própria região. */
+@media (max-width: 900px) {
+  .trabalho-govbr { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .menu-fixo .br-list { flex-direction: row; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid #e6e6e6; }
+  .campos > * { grid-column: span 12 !important; }
+  .cabeca h1 { font-size: 24px; }
+  .rodape-govbr { flex-direction: column; }
+  .br-header .header-top { flex-wrap: wrap; gap: 8px; }
+}

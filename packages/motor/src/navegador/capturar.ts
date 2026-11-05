@@ -50,7 +50,8 @@ export async function capturar(
       const p = alvos[i]!;
       andar(o, `Capturando: ${p.tela}`, i, alvos.length);
       const destino = dentroDe(o.specs, p.destinoPng!);
-      const png = marcarPng(await navegador.capturar(pathToFileURL(p.arquivo).href, { largura: o.largura }));
+      // #captura: o script do protótipo não monta a barra, e o PNG sai como antes (0004).
+      const png = marcarPng(await navegador.capturar(pathToFileURL(p.arquivo).href + '#captura', { largura: o.largura }));
       let situacao: ResultadoCaptura['situacao'] = 'gravado';
       if (!o.forcar && existsSync(destino) && mesmaImagem(await readFile(destino), png)) situacao = 'sem-mudanca';
       else await gravarSeMudou(destino, png);

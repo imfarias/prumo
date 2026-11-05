@@ -146,3 +146,30 @@ pre.json { background: var(--menu); color: var(--menu-texto); padding: 16px; ove
   .campos > * { grid-column: auto; }
   .dados, .grade-2 { grid-template-columns: 1fr; }
 }
+
+/* 0004: selo de situação (RN-86), sempre com o texto. */
+.selo { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; line-height: 1.5; white-space: nowrap; }
+.selo-sucesso { background: var(--sucesso-claro); color: var(--sucesso); }
+.selo-erro { background: var(--erro-claro); color: var(--erro); }
+.selo-aviso { background: var(--destaque-claro); color: var(--texto); }
+.selo-neutro { background: var(--nevoa); color: var(--texto); }
+
+/* 0004: janela sobre o portal. */
+.janela-fundo { position: fixed; inset: 0; z-index: 0; opacity: .35; pointer-events: none; overflow: hidden; }
+.janela-fundo-conteudo { max-width: var(--container-max); margin: 32px auto; display: grid; gap: 16px; padding: 0 24px; }
+.janela-fundo-conteudo span { display: block; height: 64px; background: var(--linha); border-radius: 6px; }
+.janela { position: relative; z-index: 1; max-width: min(1040px, calc(100% - 32px)); margin: 48px auto; background: var(--fundo); border: 1px solid var(--linha); border-radius: 10px; box-shadow: 0 18px 48px rgba(0, 0, 0, .25); }
+.janela-cabeca { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 24px; border-bottom: 1px solid var(--linha); }
+.janela-cabeca h1 { margin: 0; font-size: 24px; }
+.janela > main { padding: 20px 24px 28px; }
+
+/* 0004: barra do protótipo (só aberto direto; fora da captura e dos iframes). */
+.prumo-barra { position: fixed; right: 16px; bottom: 16px; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: calc(100% - 32px); padding: 8px 12px; background: #1B1B1B; color: #FFFFFF; border-radius: 8px; font: 14px/1.4 system-ui, sans-serif; box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
+.prumo-barra button, .prumo-barra select { font: inherit; padding: 4px 10px; border-radius: 6px; border: 1px solid #FFFFFF; background: transparent; color: inherit; min-height: 32px; }
+.prumo-barra label, .prumo-barra span { color: #FFFFFF; }
+.prumo-barra select { background: #1B1B1B; }
+.prumo-barra select option { color: #1B1B1B; background: #FFFFFF; }
+.prumo-barra button[aria-pressed="true"] { background: #FFFFFF; color: #1B1B1B; }
+.prumo-barra button:disabled { opacity: .5; }
+.prumo-barra :focus-visible { outline: 3px solid #FFCD07; outline-offset: 2px; }
+.prumo-barra [role="status"]:empty { display: none; }

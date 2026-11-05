@@ -1,0 +1,19 @@
+{% extends "base.njk" %}
+{% block corpo %}
+{# Janela sobre o portal: o fundo esmaecido é só moldura (inerte); a tela fica na janela. #}
+<div class="janela-fundo janela-fundo-{{ janela.fundo }}" aria-hidden="true" inert>
+  <div class="topo-publico"><div class="faixa"><span class="marca">{% if projeto.logo %}<img src="{{ recursos }}/{{ projeto.logo }}" alt="">{% endif %}<span>{{ projeto.nome }}{% if projeto.orgao %}<small>{{ projeto.orgao }}</small>{% endif %}</span></span></div></div>
+  <div class="janela-fundo-conteudo"><span></span><span></span><span></span><span></span></div>
+</div>
+<section class="janela" role="dialog" aria-modal="false" aria-labelledby="{{ tela.testid }}-titulo-janela" data-testid="{{ tela.testid }}-janela">
+  <header class="janela-cabeca">
+    <h1 id="{{ tela.testid }}-titulo-janela" tabindex="-1">{{ tela.titulo }}</h1>
+    {% if janela.fechar %}<a class="botao" href="{{ janela.fechar }}" data-testid="{{ tela.testid }}-janela-fechar">Fechar</a>{% else %}<button type="button" class="botao" data-testid="{{ tela.testid }}-janela-fechar" data-prumo-sem-destino>Fechar</button>{% endif %}
+  </header>
+  <main id="conteudo" data-testid="{{ tela.testid }}-conteudo">
+    {% import "macros.njk" as m %}
+    {{ m.mensagem(estado, tela) }}
+    {% block conteudo %}{% endblock %}
+  </main>
+</section>
+{% endblock %}

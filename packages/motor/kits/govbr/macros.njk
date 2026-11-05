@@ -1,0 +1,103 @@
+{# Macros do kit govbr: mesmas assinaturas, ids e data-testid do kit proprio (RN-82); só a marcação e as classes mudam. #}
+{% macro icone(nome) -%}
+<svg class="icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+{%- if nome == "alerta" %}<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/>
+{%- elif nome == "visto" %}<path d="m5 12.5 4.5 4.5L19 7.5"/>
+{%- elif nome == "lupa" %}<circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/>
+{%- elif nome == "enviar" %}<path d="M12 20V9"/><path d="m7 14 5-5 5 5"/><path d="M5 4h14"/>
+{%- elif nome == "arquivo" %}<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>
+{%- elif nome == "info" %}<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>
+{%- elif nome == "seta" %}<path d="m9 6 6 6-6 6"/>
+{%- endif %}</svg>
+{%- endmacro %}
+
+{% macro mensagem(estado, tela) %}
+{% if estado.resumoErros.length %}
+<div class="br-message danger" role="alert" tabindex="-1" id="{{ tela.testid }}-erros" data-testid="{{ tela.testid }}-resumo-erros">
+  <div class="icon">{{ icone("alerta") }}</div>
+  <div class="content"><span class="message-title">Corrija os campos abaixo</span>
+  <ul class="message-body">{% for e in estado.resumoErros %}<li><a href="#{{ e.id }}">{{ e.rotulo }}: {{ e.texto }}</a></li>{% endfor %}</ul></div>
+</div>
+{% elif estado.mensagemTopo %}
+{% set classe = {"erro": "danger", "sucesso": "success", "aviso-atencao": "warning"}[estado.mensagemTopo.classe] or "info" %}
+<div class="br-message {{ classe }}" role="{{ 'alert' if classe == 'danger' else 'status' }}" data-testid="{{ tela.testid }}-mensagem">
+  <div class="icon">{{ icone(estado.mensagemTopo.icone) }}</div>
+  <div class="content"><span class="message-title">{{ estado.mensagemTopo.texto }}</span></div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro rotulo(c) -%}
+{{ c.rotulo }}{% if c.obrigatorio %}<span class="obrig" aria-hidden="true">*</span>{% endif %}
+{%- endmacro %}
+
+{% macro descricao(c) -%}
+{%- if c.erro %} aria-invalid="true" aria-describedby="{{ c.id }}-erro"{% elif c.ajuda %} aria-describedby="{{ c.id }}-ajuda"{% endif -%}
+{%- endmacro %}
+
+{% macro rodapeCampo(c) %}
+{% if c.ajuda %}<span class="ajuda text-down-01" id="{{ c.id }}-ajuda">{{ c.ajuda }}</span>{% endif %}
+{% if c.erro %}<span class="feedback danger" id="{{ c.id }}-erro">{{ icone("alerta") }}{{ c.erro }}</span>{% endif %}
+{% endmacro %}
+
+{% macro campo(c) %}
+{% if c.componente == "leitura" %}
+<div class="br-input leitura {{ c.classe }}"><label for="{{ c.id }}">{{ c.rotulo }}</label><output id="{{ c.id }}" class="valor-leitura" data-testid="{{ c.testid }}">{{ c.valor }}</output>{{ rodapeCampo(c) }}</div>
+{% elif c.componente == "selecao" %}
+<div class="br-input {{ c.classe }}{% if c.erro %} danger{% endif %}"><label for="{{ c.id }}">{{ rotulo(c) }}</label>
+<select id="{{ c.id }}" name="{{ c.id }}" data-testid="{{ c.testid }}"{% if c.obrigatorio %} aria-required="true"{% endif %}{{ descricao(c) }}>
+<option value="">Selecione</option>{% for o in c.opcoes %}<option{% if o == c.valor %} selected{% endif %}>{{ o }}</option>{% endfor %}
+</select>{{ rodapeCampo(c) }}</div>
+{% elif c.componente == "texto-longo" %}
+<div class="br-textarea {{ c.classe }}{% if c.erro %} danger{% endif %}"><label for="{{ c.id }}">{{ rotulo(c) }}</label>
+<textarea id="{{ c.id }}" name="{{ c.id }}" data-testid="{{ c.testid }}"{% if c.obrigatorio %} aria-required="true"{% endif %}{{ descricao(c) }}>{{ c.valor }}</textarea>{{ rodapeCampo(c) }}</div>
+{% elif c.componente == "caixa" %}
+<div class="br-checkbox {{ c.classe }}{% if c.erro %} danger{% endif %}"><input type="checkbox" id="{{ c.id }}" name="{{ c.id }}" data-testid="{{ c.testid }}"{% if c.marcada %} checked{% endif %}{% if c.obrigatorio %} aria-required="true"{% endif %}{{ descricao(c) }}>
+<label for="{{ c.id }}">{{ c.texto }}{% if c.obrigatorio %}<span class="obrig" aria-hidden="true">*</span>{% endif %}</label>{{ rodapeCampo(c) }}</div>
+{% elif c.componente == "captcha" %}
+<div class="br-input {{ c.classe }}{% if c.erro %} danger{% endif %}"><label for="{{ c.id }}">{{ rotulo(c) }}</label>
+<div class="captcha"><span class="desafio" role="img" aria-label="Código de verificação ilustrativo">{{ c.desafio }}</span>
+<input type="text" id="{{ c.id }}" name="{{ c.id }}" data-testid="{{ c.testid }}" autocomplete="off"{% if c.obrigatorio %} aria-required="true"{% endif %}{{ descricao(c) }}></div>{{ rodapeCampo(c) }}</div>
+{% elif c.componente == "arquivos" %}
+<div class="br-upload {{ c.classe }}{% if c.erro %} danger{% endif %}"><span class="upload-label" id="{{ c.id }}-rotulo">{{ rotulo(c) }}</span>
+<ul class="arquivos" aria-labelledby="{{ c.id }}-rotulo" data-testid="{{ c.testid }}">
+{% for a in c.itens %}<li>{{ icone("arquivo") }}<span>{{ a.nome }}</span><label class="br-button secondary small" for="{{ c.id }}-{{ loop.index }}">{{ icone("enviar") }}Enviar PDF<span class="sr-only"> — {{ a.nome }}</span></label><input class="sr-only" type="file" accept="application/pdf" id="{{ c.id }}-{{ loop.index }}" data-testid="{{ c.testid }}-{{ loop.index }}"></li>{% endfor %}
+</ul>{{ rodapeCampo(c) }}</div>
+{% else %}
+<div class="br-input {{ c.classe }}{% if c.erro %} danger{% endif %}"><label for="{{ c.id }}">{{ rotulo(c) }}</label>
+<input type="{{ c.tipoInput }}" id="{{ c.id }}" name="{{ c.id }}" value="{{ c.valor }}" data-testid="{{ c.testid }}"{% if c.placeholder %} placeholder="{{ c.placeholder }}"{% endif %}{% if c.autocomplete %} autocomplete="{{ c.autocomplete }}"{% endif %}{% if c.obrigatorio %} aria-required="true"{% endif %}{{ descricao(c) }}>{{ rodapeCampo(c) }}</div>
+{% endif %}
+{% endmacro %}
+
+{% macro grade(lista) %}<div class="campos">{% for c in lista %}{{ campo(c) }}{% endfor %}</div>{% endmacro %}
+
+{% macro acoes(lista, testid) %}
+{% if lista.length %}
+<div class="acoes" data-testid="{{ testid }}-acoes">
+{% for a in lista %}{% if a.href %}<a class="br-button{% if a.primaria %} primary{% else %} secondary{% endif %}" href="{{ a.href }}" data-testid="{{ a.testid }}"{% if a.erros %} data-prumo-erros="{{ a.erros }}"{% endif %}>{% if a.icone %}{{ icone(a.icone) }}{% endif %}{{ a.rotulo }}</a>{% else %}<button type="button" class="br-button{% if a.primaria %} primary{% else %} secondary{% endif %}" data-testid="{{ a.testid }}"{% if a.semDestino %} data-prumo-sem-destino{% endif %}>{% if a.icone %}{{ icone(a.icone) }}{% endif %}{{ a.rotulo }}</button>{% endif %}{% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro tabela(t, testid) %}
+<div class="br-table">
+<div class="tabela-rolavel" tabindex="0" role="region" aria-label="{{ t.legenda }}">
+<table data-testid="{{ testid }}-tabela">
+<caption class="sr-only">{{ t.legenda }}</caption>
+<thead><tr>{% for c in t.colunas %}<th scope="col">{{ c.rotulo }}</th>{% endfor %}</tr></thead>
+<tbody>{% for l in t.linhas %}{% set linha = loop.index %}<tr>{% for v in l %}<td data-rotulo="{{ t.colunas[loop.index0].rotulo }}"{% if t.colunas[loop.index0].numerico %} class="num"{% endif %}>{% if v.selo %}<span class="br-tag selo selo-{{ v.selo.cor }}" data-testid="{{ testid }}-linha-{{ linha }}-selo">{{ v.selo.texto }}</span>{% elif v.acoes %}<span class="acoes-linha">{% for a in v.acoes %}<a href="{{ a.href }}" data-testid="{{ testid }}-linha-{{ linha }}-{{ a.rotulo | slug }}">{{ a.rotulo }}<span class="sr-only"> (registro {{ linha }})</span></a>{% endfor %}</span>{% else %}{{ v }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+</table>
+</div>
+</div>
+{% endmacro %}
+
+{% macro paginacao(p, testid) %}
+<nav class="br-pagination" aria-label="Paginação" data-testid="{{ testid }}-paginacao">
+<ul>
+<li><span class="pagina-passo desabilitado">« Anterior</span></li>
+{% for i in range(1, p.paginas + 1) %}<li>{% if i == 1 %}<span class="page active" aria-current="page">1</span>{% else %}<a class="page" href="#">{{ i }}</a>{% endif %}</li>{% endfor %}
+<li>{% if p.paginas > 1 %}<a class="pagina-passo" href="#">Próxima »</a>{% else %}<span class="pagina-passo desabilitado">Próxima »</span>{% endif %}</li>
+</ul>
+<span class="total">{{ p.total }} registros</span>
+</nav>
+{% endmacro %}

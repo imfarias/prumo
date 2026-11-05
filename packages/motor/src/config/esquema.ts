@@ -33,7 +33,7 @@ export interface ConfigProjeto {
   cascas: Record<string, Casca>;
   perfis: Record<string, string[]>;
   modulos: Record<string, { casca?: string; perfil?: string }>;
-  padroes: { listas_sempre_em_tela: boolean; paginacao: number; container_max: number };
+  padroes: { listas_sempre_em_tela: boolean; paginacao: number; container_max: number; selo_situacao: boolean };
   dados_ficticios: { cnpj: 'numerico' | 'alfanumerico'; sufixo_nomes: string };
   mascaras: Record<string, Mascara>;
   mensagens: Record<string, 'erro' | 'sucesso' | 'aviso'>;
@@ -68,7 +68,7 @@ export function configPadrao(): ConfigProjeto {
     },
     perfis: {},
     modulos: {},
-    padroes: { listas_sempre_em_tela: true, paginacao: 10, container_max: 1280 },
+    padroes: { listas_sempre_em_tela: true, paginacao: 10, container_max: 1280, selo_situacao: false },
     dados_ficticios: { cnpj: 'numerico', sufixo_nomes: 'Exemplo' },
     mascaras: {
       CNPJ: '##.###.###/####-##',
@@ -180,6 +180,8 @@ export function validarConfig(bruto: unknown, arquivo: string, linhaDe: (caminho
     if (typeof pd.listas_sempre_em_tela === 'boolean') c.padroes.listas_sempre_em_tela = pd.listas_sempre_em_tela;
     if (Number.isInteger(pd.paginacao)) c.padroes.paginacao = pd.paginacao as number;
     if (Number.isInteger(pd.container_max)) c.padroes.container_max = pd.container_max as number;
+    // Selo de situação no kit proprio (RN-86); no govbr vem sempre. Desligado por padrão para não mudar PNGs existentes.
+    if (typeof pd.selo_situacao === 'boolean') c.padroes.selo_situacao = pd.selo_situacao;
   }
   if (ehObjeto(bruto.dados_ficticios)) {
     const d = bruto.dados_ficticios;

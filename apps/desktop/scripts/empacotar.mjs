@@ -60,6 +60,7 @@ await build({
 for (const f of ['index.html', 'estilo.css']) cpSync(path.join(APP, 'src/janela', f), path.join(DIST, 'janela', f));
 const atkinson = path.join(path.dirname(require.resolve('@fontsource/atkinson-hyperlegible/package.json')), 'files');
 const jost = path.join(path.dirname(require.resolve('@fontsource/jost/package.json')), 'files');
+const raleway = path.join(path.dirname(require.resolve('@fontsource/raleway/package.json')), 'files');
 for (const n of ['atkinson-hyperlegible-latin-400-normal.woff2', 'atkinson-hyperlegible-latin-700-normal.woff2']) cpSync(path.join(atkinson, n), path.join(DIST, 'janela', 'fontes', n));
 
 // Recursos do motor (PRUMO_RECURSOS): kits, fontes embutidas (subconjunto latino) e axe.
@@ -67,7 +68,7 @@ const REC = path.join(DIST, 'recursos');
 cpSync(path.join(MOTOR, 'kits'), path.join(REC, 'kits'), { recursive: true });
 mkdirSync(path.join(REC, 'fontes'), { recursive: true });
 const { readdirSync } = await import('node:fs');
-for (const [dir, prefixo] of [[atkinson, 'atkinson-hyperlegible-latin-'], [jost, 'jost-latin-']]) {
+for (const [dir, prefixo] of [[atkinson, 'atkinson-hyperlegible-latin-'], [jost, 'jost-latin-'], [raleway, 'raleway-latin-']]) {
   for (const n of readdirSync(dir)) if (n.startsWith(prefixo) && n.endsWith('.woff2')) cpSync(path.join(dir, n), path.join(REC, 'fontes', n));
 }
 cpSync(require.resolve('axe-core/axe.min.js'), path.join(REC, 'axe.min.js'));

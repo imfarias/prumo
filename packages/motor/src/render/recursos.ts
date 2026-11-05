@@ -3,7 +3,7 @@ import { copyFile, mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Achado, ConfigProjeto } from '../config/esquema.js';
 import { dentroDe } from '../util/caminhos.js';
-import { caminhoFonte, cssDosTokens, FONTES_EMBUTIDAS, fontesUsadas } from './tokens-css.js';
+import { caminhoFonte, cssDosTokens, FONTES_EMBUTIDAS, fontFaces, fontesUsadas } from './tokens-css.js';
 
 /** Grava só se o conteúdo mudou (mantém data de modificação e evita diff no Git). */
 export async function gravarSeMudou(destino: string, conteudo: string | Buffer): Promise<boolean> {
@@ -44,8 +44,16 @@ async function copiarCssComDependencias(origem: string, destino: string, raizOri
   }
 }
 
+/** govbr.css é gerado no build do motor (scripts/govbr-css.mjs); sem ele, o kit não tem o estilo do padrão. */
+async function lerGovbrCss(kitDir: string): Promise<string> {
+  const arquivo = path.join(kitDir, 'govbr.css');
+  if (!existsSync(arquivo)) throw new Error(`Falta ${arquivo}: rode o build do motor (npm run build -w @prumo/motor).`);
+  return readFile(arquivo, 'utf8');
+}
+
 export interface Recursos {
   logo?: string; // relativo a _recursos
+  logoClaro?: string; // relativo a _recursos (RN-88)
   cssAdicional?: string; // relativo a _recursos
 }
 
@@ -53,10 +61,14 @@ export interface Recursos {
 export async function gravarRecursos(saida: string, kitDir: string, config: ConfigProjeto, specs: string, achados: Achado[], arquivoConfig: string): Promise<Recursos> {
   const dir = dentroDe(saida, path.join(saida, '_recursos'));
   await mkdir(path.join(dir, 'fontes'), { recursive: true });
-  const css = cssDosTokens(config, achados, arquivoConfig) + (await readFile(path.join(kitDir, 'estilo.css'), 'utf8'));
+  const govbr = config.identidade.design_system === 'govbr';
+  // govbr: cores e fonte do padrão (as do projeto não se aplicam, FA-03); proprio: tokens do projeto.
+  const css = govbr
+    ? `${fontFaces('Raleway')}\n${await lerGovbrCss(kitDir)}\n${await readFile(path.join(kitDir, 'ajustes.css'), 'utf8')}`
+    : cssDosTokens(config, achados, arquivoConfig) + (await readFile(path.join(kitDir, 'estilo.css'), 'utf8'));
   await gravarSeMudou(path.join(dir, 'prumo.css'), css);
-  await gravarSeMudou(path.join(dir, 'prumo-prototipo.js'), await readFile(path.join(kitDir, 'prumo-prototipo.js')));
-  for (const familia of fontesUsadas(config, [], arquivoConfig)) {
+  await gravarSeMudou(path.join(dir, 'prumo-prototipo.js'), await readFile(path.join(kitDir, '..', 'comum', 'prumo-prototipo.js')));
+  for (const familia of govbr ? ['Raleway'] : fontesUsadas(config, [], arquivoConfig)) {
     for (const a of FONTES_EMBUTIDAS[familia]!.arquivos) {
       await gravarSeMudou(path.join(dir, 'fontes', a.nome), await readFile(caminhoFonte(familia, a.nome)));
     }
@@ -69,6 +81,15 @@ export async function gravarRecursos(saida: string, kitDir: string, config: Conf
       await gravarSeMudou(path.join(dir, r.logo), await readFile(origem));
     } else {
       achados.push({ severidade: 'aviso', codigo: 'config/logo', arquivo: arquivoConfig, mensagem: `Logo "${config.projeto.logo}" não encontrado; as telas saem sem logo.` });
+    }
+  }
+  if (config.projeto.logo_claro) {
+    const origem = path.resolve(specs, config.projeto.logo_claro);
+    if (existsSync(origem)) {
+      r.logoClaro = `logo-claro${path.extname(origem).toLowerCase()}`;
+      await gravarSeMudou(path.join(dir, r.logoClaro), await readFile(origem));
+    } else {
+      achados.push({ severidade: 'aviso', codigo: 'config/logo', arquivo: arquivoConfig, mensagem: `Logo claro "${config.projeto.logo_claro}" não encontrado; o cabeçalho claro usa o logo normal.` });
     }
   }
   if (config.identidade.css_adicional) {

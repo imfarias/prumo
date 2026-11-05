@@ -1,0 +1,15 @@
+{% extends "base.njk" %}
+{% block corpo %}
+<div class="govbr publico">
+{% if casca.topo %}
+{% include "cabecalho.njk" %}
+{% endif %}
+<main id="conteudo" class="container-lg principal" data-testid="{{ tela.testid }}-conteudo">
+{% include "topo-tela.njk" %}
+{% block conteudo %}{% endblock %}
+</main>
+{% if casca.rodape %}
+{% include "rodape.njk" %}
+{% endif %}
+</div>
+{% endblock %}

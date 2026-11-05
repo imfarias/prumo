@@ -2,7 +2,8 @@ import path from 'node:path';
 import { diretorioKits } from '../util/recursos.js';
 import { andar, type OpcoesExecucao } from '../util/execucao.js';
 import nunjucks from 'nunjucks';
-import type { Achado, ConfigProjeto } from '../config/esquema.js';
+import { configPadrao, type Achado, type ConfigProjeto } from '../config/esquema.js';
+import { classificarSelo, colunaComSelo, type CorSelo } from '../inferencia/selo.js';
 import { criarGerador, valorFicticio, type Gerador } from '../dados/ficticios.js';
 import { listaDeMascaras } from '../dados/mascara.js';
 import type { Campo, Estado, ModeloTelas, Tela } from '../modelo/tipos.js';
@@ -30,9 +31,15 @@ export function dentroDoRecorte(t: Tela, r?: Recorte): boolean {
 
 const KITS = () => diretorioKits();
 
+/** Pasta do kit (RN-80). No govbr as cores são as do padrão; cores próprias do projeto geram aviso (FA-03). */
 export function diretorioDoKit(config: ConfigProjeto, achados: Achado[], arquivo: string): string {
   if (config.identidade.design_system === 'govbr') {
-    achados.push({ severidade: 'aviso', codigo: 'identidade/kit', arquivo, mensagem: 'O kit govbr chega na fase 4; usando o kit proprio com os tokens do projeto.' });
+    const padrao = configPadrao().identidade.cores;
+    const diferentes = Object.entries(config.identidade.cores).filter(([k, v]) => padrao[k] && padrao[k]!.toLowerCase() !== String(v).toLowerCase()).map(([k]) => k);
+    if (diferentes.length) {
+      achados.push({ severidade: 'aviso', codigo: 'kit/cor-ignorada', arquivo, mensagem: `O kit gov.br usa as cores do padrão; as cores de ${diferentes.join(', ')} do projeto.yml não são aplicadas.` });
+    }
+    return path.join(KITS(), 'govbr');
   }
   return path.join(KITS(), 'proprio');
 }
@@ -115,7 +122,7 @@ function campoVM(c: Campo, tela: Tela, e: Estado, g: Gerador, filtro: boolean, t
 const RE_ACAO_DE_LINHA = /^(analisar|visualizar|ver|editar|alterar|excluir|remover|ativar|desativar|inativar|detalhar|abrir|gerenciar|acessar)\b/;
 const ehColunaAcoes = (c: Campo) => /^a[cç](o|õ)es?$/.test(normalizar(c.nome).replace(/[^a-z]/g, '')) || /^acoes?$/.test(normalizar(c.nome));
 
-type Celula = string | { acoes: { rotulo: string; href?: string }[] };
+type Celula = string | { acoes: { rotulo: string; href?: string }[] } | { selo: { texto: string; cor: CorSelo } };
 
 function acoesDeLinha(tela: Tela, telas: Tela[]) {
   return tela.acoes
@@ -132,16 +139,21 @@ function linhasDaTabela(tela: Tela, e: Estado, config: ConfigProjeto, colunas: C
   const n = Math.min(config.padroes.paginacao, 5);
   const linhas: Celula[][] = [];
   const deLinha = acoesDeLinha(tela, telas);
+  // Selo de situação (RN-86): sempre no govbr; no proprio só com padroes.selo_situacao (não muda PNGs existentes).
+  const comSelo = config.identidade.design_system === 'govbr' || config.padroes.selo_situacao;
   for (let i = 0; i < n; i++) {
     linhas.push(colunas.map((col): Celula => {
       if (ehColunaAcoes(col)) return { acoes: deLinha.length ? deLinha : [{ rotulo: 'Visualizar', href: '#' }] };
       const filtro = tela.filtros.find((f) => mesmoTexto(f.nome, col.nome));
       if (i === 0) {
         const ex = valorDe(col, e) ?? (filtro ? valorDe(filtro, e) : undefined);
-        if (ex) return ex;
+        if (ex) return comSelo && colunaComSelo(col, filtro?.opcoes ?? col.opcoes) ? { selo: { texto: ex, cor: classificarSelo(ex) } } : ex;
       }
       const opcoes = filtro?.opcoes ?? col.opcoes;
-      if (opcoes?.length) return opcoes[i % opcoes.length]!;
+      if (opcoes?.length) {
+        const v = opcoes[i % opcoes.length]!;
+        return comSelo && colunaComSelo(col, opcoes) ? { selo: { texto: v, cor: classificarSelo(v) } } : v;
+      }
       return valorFicticio(col.nome, criarGerador(`${tela.id}|${col.id}|${i}`, geradorOpcoes(config)), tela.titulo);
     }));
   }
@@ -163,10 +175,16 @@ function acoesVM(tela: Tela, telas: Tela[], filtro: boolean) {
     .filter((a) => !(temColunaAcoes && RE_ACAO_DE_LINHA.test(normalizar(a.rotulo))))
     .map((a) => {
       const destino = a.destino ? telas.find((t) => t.id === a.destino) : undefined;
+      // RN-84: a ação leva ao destino ou ao estado de sucesso; sem sucesso, ao primeiro erro ou aviso.
+      const estadoAlvo = a.fluxo ? (a.fluxo.sucesso ?? a.fluxo.erros[0] ?? a.fluxo.avisos[0]) : undefined;
+      const href = destino ? hrefTela(destino) : estadoAlvo ? hrefTela(tela, estadoAlvo) : undefined;
+      const local = /^(filtrar|limpar|pesquisar|buscar|consultar)/.test(normalizar(a.rotulo));
       return {
         rotulo: a.rotulo,
         primaria: a.primaria,
-        href: destino ? hrefTela(destino) : undefined,
+        href,
+        erros: a.fluxo?.erros.length ? a.fluxo.erros.map((e) => hrefTela(tela, e)).join(' ') : undefined,
+        semDestino: !href && !local,
         testid: `${ts}-acao-${a.id}`,
         icone: ICONE_ACAO.find(([re]) => re.test(normalizar(a.rotulo)))?.[1],
       };
@@ -193,7 +211,7 @@ function tabelaDados(d: Tela['dados'][number], i: number) {
   return { id: `dados-${i + 1}`, legenda: d.titulo, colunas: d.cabecalho.map((rotulo) => ({ rotulo })), linhas: d.linhas.map((l) => l.map((v) => v.replace(/[*`]/g, '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1'))) };
 }
 
-export function contextoDaPagina(tela: Tela, e: Estado, modelo: ModeloTelas, config: ConfigProjeto, recursos: { logo?: string; cssAdicional?: string }) {
+export function contextoDaPagina(tela: Tela, e: Estado, modelo: ModeloTelas, config: ConfigProjeto, recursos: { logo?: string; logoClaro?: string; cssAdicional?: string }) {
   const g = criarGerador(`${tela.id}|${e.id}`, geradorOpcoes(config));
   const gFixo = criarGerador(tela.id, geradorOpcoes(config));
   const ts = slug(tela.id);
@@ -213,11 +231,17 @@ export function contextoDaPagina(tela: Tela, e: Estado, modelo: ModeloTelas, con
 
   const telas = modelo.telas;
   return {
-    projeto: { nome: config.projeto.nome, versao: config.projeto.versao, orgao: config.projeto.orgao, logo: recursos.logo },
+    projeto: { nome: config.projeto.nome, versao: config.projeto.versao, orgao: config.projeto.orgao, logo: recursos.logo, logoClaro: recursos.logoClaro ?? recursos.logo },
     cssAdicional: recursos.cssAdicional,
     recursos: '../../_recursos',
     inicio: '../../index.html',
-    cascaTemplate: tela.casca === 'autenticada' ? 'casca-autenticada.njk' : 'casca-publica.njk',
+    cascaTemplate: tela.janela ? 'casca-janela.njk' : tela.casca === 'autenticada' ? 'casca-autenticada.njk' : 'casca-publica.njk',
+    // Janela sobre o portal: "Fechar" volta à tela que leva a esta, se houver.
+    janela: tela.janela
+      ? { fundo: tela.casca === 'autenticada' ? 'autenticada' : 'publica', fechar: (() => { const o = telas.find((t) => t.acoes.some((a) => a.destino === tela.id)); return o ? hrefTela(o) : undefined; })() }
+      : undefined,
+    // Estados da tela para a barra do protótipo ("rótulo=href|…").
+    estadosBarra: tela.estados.map((x) => `${x.id}=${seg(x.id)}.html`).join('|'),
     casca: {
       ...(config.cascas[tela.casca] ?? {}),
       atalhos: [],
@@ -271,7 +295,9 @@ export async function gerarPrototipos(modelo: ModeloTelas, config: ConfigProjeto
   const arquivoConfig = o.arquivoConfig ?? 'projeto.yml';
   const kit = diretorioDoKit(config, achados, arquivoConfig);
   const recursos = await gravarRecursos(o.saida, kit, config, o.specs, achados, arquivoConfig);
-  const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(kit, { noCache: true }), { autoescape: true, throwOnUndefined: false, trimBlocks: true, lstripBlocks: true });
+  // govbr reaproveita os layouts do proprio (mesmos ids e data-testid, RN-82): procura primeiro no kit, depois no proprio.
+  const pastas = path.basename(kit) === 'proprio' ? [kit] : [kit, path.join(KITS(), 'proprio')];
+  const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(pastas, { noCache: true }), { autoescape: true, throwOnUndefined: false, trimBlocks: true, lstripBlocks: true });
   env.addFilter('slug', slug);
   const paginas: PaginaGerada[] = [];
   const telas = modelo.telas.filter((t) => dentroDoRecorte(t, o.recorte));

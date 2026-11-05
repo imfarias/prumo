@@ -12,7 +12,7 @@
 {% if cssAdicional %}<link rel="stylesheet" href="{{ recursos }}/{{ cssAdicional }}">{% endif %}
 <script src="{{ recursos }}/prumo-prototipo.js"></script>
 </head>
-<body data-testid="{{ tela.testid }}-pagina" data-layout="{{ layout }}">
+<body data-testid="{{ tela.testid }}-pagina" data-layout="{{ layout }}" data-prumo-estado="{{ estado.id }}" data-prumo-estados="{{ estadosBarra }}">
 {% block corpo %}{% endblock %}
 </body>
 </html>

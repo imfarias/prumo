@@ -11,6 +11,16 @@ export const FONTES_EMBUTIDAS: Record<string, { pacote: string; arquivos: { peso
       { peso: 700, estilo: 'normal', nome: 'jost-latin-700-normal.woff2' },
     ],
   },
+  // Kit govbr (0004): a Raleway é a reserva que o próprio gov.br DS declara para a Rawline, que não está no npm.
+  'Raleway': {
+    pacote: '@fontsource/raleway',
+    arquivos: [
+      { peso: 400, estilo: 'normal', nome: 'raleway-latin-400-normal.woff2' },
+      { peso: 400, estilo: 'italic', nome: 'raleway-latin-400-italic.woff2' },
+      { peso: 600, estilo: 'normal', nome: 'raleway-latin-600-normal.woff2' },
+      { peso: 700, estilo: 'normal', nome: 'raleway-latin-700-normal.woff2' },
+    ],
+  },
   'Atkinson Hyperlegible': {
     pacote: '@fontsource/atkinson-hyperlegible',
     arquivos: [
@@ -33,6 +43,13 @@ export function fontesUsadas(config: ConfigProjeto, achados: Achado[], arquivo: 
     else achados.push({ severidade: 'aviso', codigo: 'identidade/fonte', arquivo, mensagem: `A fonte "${f}" (${papel}) não está embutida no Prumo; a tela usa a fonte do sistema. Disponíveis: ${Object.keys(FONTES_EMBUTIDAS).join(', ')}.` });
   }
   return [...usadas];
+}
+
+/** @font-face de uma família embutida (caminhos relativos a _recursos/). */
+export function fontFaces(familia: string): string {
+  return FONTES_EMBUTIDAS[familia]!.arquivos
+    .map((a) => `@font-face{font-family:"${familia}";font-style:${a.estilo};font-weight:${a.peso};font-display:block;src:url("fontes/${a.nome}") format("woff2")}`)
+    .join('\n');
 }
 
 /** CSS do projeto: @font-face das fontes embutidas + variáveis derivadas dos tokens. */

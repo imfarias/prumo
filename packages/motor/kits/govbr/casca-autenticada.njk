@@ -1,0 +1,20 @@
+{% extends "base.njk" %}
+{% block corpo %}
+<div class="govbr autenticada">
+{% include "cabecalho.njk" %}
+<div class="container-lg trabalho-govbr">
+  {% if casca.menu.length %}
+  <nav class="br-menu menu-fixo" aria-label="Menu do perfil" data-testid="casca-menu">
+    <div class="br-list">
+      {% for item in casca.menu %}<a class="br-item{% if item.atual %} active{% endif %}" href="{{ item.href }}"{% if item.atual %} aria-current="page"{% endif %}{% if item.href == '#' %} data-prumo-sem-destino{% endif %}>{{ item.rotulo }}</a>{% endfor %}
+    </div>
+  </nav>
+  {% endif %}
+  <main id="conteudo" class="principal" data-testid="{{ tela.testid }}-conteudo">
+  {% include "topo-tela.njk" %}
+  {% block conteudo %}{% endblock %}
+  </main>
+</div>
+{% include "rodape.njk" %}
+</div>
+{% endblock %}

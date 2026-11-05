@@ -1,0 +1,26 @@
+{# Cabeçalho do gov.br DS: logo e órgão em cima, nome do sistema embaixo; na casca autenticada, a pessoa e "Sair". #}
+<header class="br-header" data-testid="casca-cabecalho">
+  <div class="container-lg">
+    <div class="header-top">
+      <div class="header-logo">
+        <a href="{{ inicio }}" class="marca-govbr">{% if projeto.logoClaro %}<img src="{{ recursos }}/{{ projeto.logoClaro }}" alt="{{ projeto.nome }}">{% else %}<span class="marca-texto">{{ projeto.nome }}</span>{% endif %}</a>
+        {% if projeto.orgao %}<span class="br-divider vertical"></span><div class="header-sign">{{ projeto.orgao }}</div>{% endif %}
+      </div>
+      {% if cascaTemplate == "casca-autenticada.njk" %}
+      <div class="header-actions">
+        <div class="header-login" data-testid="casca-conta">
+          <span class="pessoa"><b>{{ casca.usuario.nome }}</b>{% if casca.usuario.perfil %}<small>{{ casca.usuario.perfil }}</small>{% endif %}</span>
+          {% for c in casca.conta %}<a class="br-button secondary small" href="#" data-prumo-sem-destino>{{ c }}</a>{% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="header-bottom">
+      <div class="header-menu">
+        <div class="header-info">
+          <div class="header-title">{{ projeto.nome }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

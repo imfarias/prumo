@@ -98,7 +98,7 @@ export async function gerarPdf(specs: string, o: OpcoesPdf): Promise<{ arquivo: 
       const g = await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida: path.join(temp, 'prototipos'), recorte: { telas: faltam.map((x) => x.prototipo!.tela) } });
       for (const pg of g.paginas.filter((x) => x.estado === 'padrao')) {
         const destino = path.join(rec, 'capturas', `${pg.tela}.png`);
-        await gravarSeMudou(destino, await nav.capturar(pathToFileURL(pg.arquivo).href, { largura: p.config.largura_captura }));
+        await gravarSeMudou(destino, await nav.capturar(pathToFileURL(pg.arquivo).href + '#captura', { largura: p.config.largura_captura }));
         capturados.set(pg.tela, `recursos/capturas/${encodeURIComponent(pg.tela)}.png`);
       }
     }

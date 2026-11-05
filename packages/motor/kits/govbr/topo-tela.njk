@@ -1,0 +1,10 @@
+{% import "macros.njk" as m %}
+<nav class="br-breadcrumb" aria-label="Migalha" data-testid="casca-migalha">
+  <ol class="crumb-list" role="list">
+  {% for item in migalha %}<li class="crumb{% if loop.first %} home{% endif %}"{% if loop.last %} data-active="active"{% endif %}>{% if not loop.first %}{{ m.icone("seta") }}{% endif %}{% if item.href %}<a href="{{ item.href }}">{{ item.rotulo }}</a>{% else %}<span aria-current="page">{{ item.rotulo }}</span>{% endif %}</li>{% endfor %}
+  </ol>
+</nav>
+<div class="cabeca">
+  <h1>{{ tela.titulo }}</h1>{% if tela.descricao %}<p class="meta">{{ tela.descricao }}</p>{% endif %}
+</div>
+{{ m.mensagem(estado, tela) }}

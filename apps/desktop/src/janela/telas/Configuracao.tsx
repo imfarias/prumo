@@ -259,7 +259,7 @@ export function Configuracao() {
 
       <fieldset>
         <legend>Identidade</legend>
-        <Escolha id="identidade-design-system" rotulo="Kit de design" valor={v['identidade.design_system']} opcoes={[['proprio', 'Próprio (tokens do projeto)'], ['govbr', 'gov.br DS (chega na fase 4)']]} aoMudar={set('identidade.design_system')} />
+        <Escolha id="identidade-design-system" rotulo="Kit de design" valor={v['identidade.design_system']} opcoes={[['proprio', 'Próprio (tokens do projeto)'], ['govbr', 'gov.br DS (cores e fonte do padrão)']]} aoMudar={set('identidade.design_system')} />
         <div class="linha-campos">
           {CORES.map(([k, r]) => {
             const chave = `identidade.cores.${k}`;

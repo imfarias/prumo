@@ -23,7 +23,7 @@ import { modeloDaDocumentacao, rotaFuncionalidade } from './modelo.js';
 import type { Documentacao, Modo, NoArvore, PaginaDoc } from './tipos.js';
 
 export const kitDocs = () => path.join(diretorioKits(), 'docs');
-const kitPrototipo = () => path.join(diretorioKits(), 'proprio');
+const kitPrototipo = () => path.join(diretorioKits(), 'comum');
 const LISTA = '.prumo-arquivos';
 const MIME: Record<string, string> = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff2': 'font/woff2', '.woff': 'font/woff' };
 
@@ -303,6 +303,7 @@ async function paginaUnica(arquivo: string, recursos: string, usados?: Set<strin
     .replace(/<link rel="stylesheet" href="[^"]*_recursos\/adicional\/[^"]*">/g, '')
     .replace(/<script src="[^"]*_recursos\/prumo-prototipo\.js"><\/script>/, '<!--PRUMO-JS-->')
     .replace(/href="\.\.\/\.\.\/([^"/]+)\/([^"/]+)\/([^"/]+)\.html"/g, (_m, a: string, b: string, c: string) => `href="#" data-prumo-alvo="${decodeURIComponent(a)}/${decodeURIComponent(b)}/${decodeURIComponent(c)}"`)
+    .replace(/data-prumo-erros="([^"]*)"/g, (_m, lista: string) => `data-prumo-erros-alvo="${lista.split(' ').map((h) => /\.\.\/\.\.\/([^/]+)\/([^/]+)\/([^/]+)\.html$/.exec(h)).filter(Boolean).map((m) => m!.slice(1).map(decodeURIComponent).join('/')).join(' ')}"`)
     .replace(/href="\.\.\/\.\.\/index\.html"/g, 'href="#"');
   // Imagens dos recursos (logo, brasão) ficam uma vez só em dados.recursosPrototipo; aqui só a referência.
   return html.replace(/src="\.\.\/\.\.\/_recursos\/([^"]+)"/g, (m, rel: string) => {
