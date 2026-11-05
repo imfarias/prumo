@@ -9,7 +9,7 @@ import { compararPng, type ItemComparacao } from './comparacao/png.js';
 import { montarModelo } from './modelo/montar.js';
 import { serializarModelo } from './modelo/serializar.js';
 import type { ModeloTelas } from './modelo/tipos.js';
-import { capturar, type ResultadoCaptura } from './navegador/capturar.js';
+import { capturar, destinoCelular, type ResultadoCaptura } from './navegador/capturar.js';
 import type { Navegador } from './navegador/navegador.js';
 import { NavegadorPlaywright } from './navegador/playwright.js';
 import { montarIndice, type Indice } from './parser/indice.js';
@@ -73,13 +73,14 @@ export async function gerar(specs: string, o: { projeto?: string; saida?: string
 /** `prumo capturar`: gera e grava os PNGs no caminho que o @prototipo referencia. */
 export async function gerarECapturar(
   specs: string,
-  o: { projeto?: string; saida?: string; recorte?: Recorte; largura?: number; forcar?: boolean; navegador?: Navegador; aoGravar?: (r: ResultadoCaptura) => void } & OpcoesExecucao = {},
+  o: { projeto?: string; saida?: string; recorte?: Recorte; largura?: number; forcar?: boolean; celular?: boolean; navegador?: Navegador; aoGravar?: (r: ResultadoCaptura) => void } & OpcoesExecucao = {},
 ) {
   const g = await gerar(specs, o);
   const nav = o.navegador ?? new NavegadorPlaywright();
   await nav.abrir();
   try {
-    const capturas = await capturar(g.paginas, nav, { specs: g.preparado.specs, largura: o.largura ?? g.preparado.config.largura_captura, forcar: o.forcar, aoGravar: o.aoGravar, sinal: o.sinal, aoAndamento: o.aoAndamento });
+    const celular = o.celular ?? g.preparado.config.captura.celular;
+    const capturas = await capturar(g.paginas, nav, { specs: g.preparado.specs, largura: o.largura ?? g.preparado.config.largura_captura, forcar: o.forcar, celular, aoGravar: o.aoGravar, sinal: o.sinal, aoAndamento: o.aoAndamento });
     return { ...g, capturas, bloqueados: nav.bloqueados() };
   } finally {
     await nav.fechar();
@@ -87,25 +88,29 @@ export async function gerarECapturar(
 }
 
 /** `prumo comparar-png`: captura numa pasta temporária e compara com os PNGs atuais das especificações. */
-export async function compararComAtuais(specs: string, o: { projeto?: string; saida?: string; recorte?: Recorte; navegador?: Navegador } & OpcoesExecucao = {}): Promise<{ itens: ItemComparacao[]; relatorio: string }> {
+export async function compararComAtuais(specs: string, o: { projeto?: string; saida?: string; recorte?: Recorte; celular?: boolean; navegador?: Navegador } & OpcoesExecucao = {}): Promise<{ itens: ItemComparacao[]; relatorio: string }> {
   const saida = path.resolve(o.saida ?? path.join(process.cwd(), 'saida', 'comparacao'));
   const temp = await mkdtemp(path.join(os.tmpdir(), 'prumo-comparar-'));
   try {
     const p = await preparar(specs, o);
     const r = await gerarPrototipos(p.modelo, p.config, { specs: p.specs, saida: path.join(temp, 'html'), recorte: o.recorte, arquivoConfig: p.arquivoConfig, sinal: o.sinal, aoAndamento: o.aoAndamento });
     const copia = r.paginas.map((x) => ({ ...x, destinoPng: x.destinoPng ? path.join(temp, 'png', path.relative(p.specs, x.destinoPng)) : undefined }));
+    const celular = o.celular ?? p.config.captura.celular;
     const nav = o.navegador ?? new NavegadorPlaywright();
     await nav.abrir();
     try {
-      await capturar(copia, nav, { specs: temp, largura: p.config.largura_captura, forcar: true, sinal: o.sinal, aoAndamento: o.aoAndamento });
+      await capturar(copia, nav, { specs: temp, largura: p.config.largura_captura, forcar: true, celular, sinal: o.sinal, aoAndamento: o.aoAndamento });
     } finally {
       await nav.fechar();
     }
     const pares = p.modelo.telas
       .filter((t) => dentroDoRecorte(t, o.recorte))
-      .map((t) => {
+      .flatMap((t) => {
         const rel = path.join(t.modulo, t.prototipo.imagem ?? `${t.id}.png`);
-        return { tela: t.id, modulo: t.modulo, referencia: path.join(p.specs, rel), gerado: path.join(temp, 'png', rel) };
+        const par = { tela: t.id, modulo: t.modulo, referencia: path.join(p.specs, rel), gerado: path.join(temp, 'png', rel) };
+        // Celular (CT-I07): compara o par de 390 px quando os dois existem.
+        const cel = { tela: `${t.id} (celular)`, modulo: t.modulo, referencia: destinoCelular(par.referencia), gerado: destinoCelular(par.gerado) };
+        return celular && existsSync(cel.referencia) ? [par, cel] : [par];
       })
       .filter((x) => existsSync(x.gerado));
     const itens = await compararPng(pares, saida);

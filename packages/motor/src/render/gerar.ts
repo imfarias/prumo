@@ -147,12 +147,12 @@ function linhasDaTabela(tela: Tela, e: Estado, config: ConfigProjeto, colunas: C
       const filtro = tela.filtros.find((f) => mesmoTexto(f.nome, col.nome));
       if (i === 0) {
         const ex = valorDe(col, e) ?? (filtro ? valorDe(filtro, e) : undefined);
-        if (ex) return comSelo && colunaComSelo(col, filtro?.opcoes ?? col.opcoes) ? { selo: { texto: ex, cor: classificarSelo(ex) } } : ex;
+        if (ex) return comSelo && colunaComSelo(col, filtro?.opcoes ?? col.opcoes) ? { selo: { texto: ex, cor: col.selos?.[ex] ?? classificarSelo(ex) } } : ex;
       }
       const opcoes = filtro?.opcoes ?? col.opcoes;
       if (opcoes?.length) {
         const v = opcoes[i % opcoes.length]!;
-        return comSelo && colunaComSelo(col, opcoes) ? { selo: { texto: v, cor: classificarSelo(v) } } : v;
+        return comSelo && colunaComSelo(col, opcoes) ? { selo: { texto: v, cor: col.selos?.[v] ?? classificarSelo(v) } } : v;
       }
       return valorFicticio(col.nome, criarGerador(`${tela.id}|${col.id}|${i}`, geradorOpcoes(config)), tela.titulo);
     }));

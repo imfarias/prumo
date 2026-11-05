@@ -44,6 +44,8 @@ export interface Campo {
   secao?: string;
   ajuda?: string;
   sinais: Sinal[];
+  /** Cor do selo por valor, vinda do override (RN-86). */
+  selos?: Record<string, 'sucesso' | 'erro' | 'aviso' | 'neutro'>;
   origem: Origem;
 }
 

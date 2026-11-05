@@ -42,6 +42,13 @@
   {% for e in pg.prototipo.estados %}<button type="button" class="botao pequeno" aria-pressed="{{ 'true' if loop.first else 'false' }}" data-estado="{{ e.id }}" data-caminho="{{ raiz }}{{ e.caminho }}" data-testid="docs-prototipo-estado-{{ e.id }}">{{ e.rotulo }}</button>{% endfor %}
   {% if pg.prototipo.anterior %}{% for e in pg.prototipo.anterior.estados %}{% if loop.first %}<button type="button" class="botao pequeno" aria-pressed="false" data-estado="anterior-{{ e.id }}" data-caminho="{{ raiz }}{{ e.caminho }}" data-testid="docs-prototipo-anterior">Versão anterior</button>{% endif %}{% endfor %}{% endif %}
   </div>
+  <div role="group" aria-label="Simulação" class="simulacao">
+    <button type="button" class="botao pequeno" aria-pressed="false" data-simular data-testid="docs-prototipo-simular">Simular erro</button>
+  </div>
+  <div role="group" aria-label="Largura" class="largura">
+    <button type="button" class="botao pequeno" aria-pressed="true" data-largura="1440" data-testid="docs-prototipo-computador">Computador</button>
+    <button type="button" class="botao pequeno" aria-pressed="false" data-largura="390" data-testid="docs-prototipo-celular">Celular</button>
+  </div>
   <div role="group" aria-label="Zoom" class="zoom">
     <button type="button" class="botao pequeno" aria-pressed="true" data-zoom="ajustar" data-testid="docs-prototipo-zoom-ajustar">Ajustar à largura</button>
     <button type="button" class="botao pequeno" aria-pressed="false" data-zoom="100" data-testid="docs-prototipo-zoom-100">100%</button>

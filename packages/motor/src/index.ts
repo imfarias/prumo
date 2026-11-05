@@ -15,7 +15,7 @@ export type * from './modelo/tipos.js';
 export { verificar } from './verificacao/verificar.js';
 export { formatarJson, formatarTexto, resumo } from './verificacao/formatar.js';
 export { gerarPrototipos, type PaginaGerada, type Recorte } from './render/gerar.js';
-export { capturar, type ResultadoCaptura } from './navegador/capturar.js';
+export { capturar, destinoCelular, LARGURA_CELULAR, type ResultadoCaptura } from './navegador/capturar.js';
 export type { Navegador, ResultadoAxe } from './navegador/navegador.js';
 export { SCRIPT_ESTABILIZAR } from './navegador/navegador.js';
 export { NavegadorPlaywright, MENSAGEM_SEM_NAVEGADOR } from './navegador/playwright.js';

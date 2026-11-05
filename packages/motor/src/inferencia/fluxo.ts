@@ -59,6 +59,9 @@ export function ligarFluxos(telas: Tela[], arquivos: Map<string, ArquivoFeature>
         const id = acao.destino.slice('estado:'.length);
         acao.destino = undefined;
         const e = t.estados.find((x) => x.id === id);
+        if (!e) {
+          achados.push({ severidade: 'aviso', codigo: 'override/campo-inexistente', arquivo: acao.origem.arquivo, linha: acao.origem.linha, mensagem: `A ação ${acao.rotulo} aponta para o estado "${id}", que não existe em ${t.id} (estados: ${t.estados.map((x) => x.id).join(', ')}).` });
+        }
         if (e) {
           acao.fluxo = { sucesso: e.tipo === 'sucesso' ? e.id : undefined, erros: e.tipo === 'erro' ? [e.id] : [], avisos: e.tipo === 'aviso' ? [e.id] : [] };
           acao.sinal = { regra: 'override', descricao: `destino: estado ${id}` };

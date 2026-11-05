@@ -34,7 +34,7 @@ const HEX = /^#[0-9A-Fa-f]{6}$/;
 /** Valores editáveis do formulário, planos, com o caminho no projeto.yml. */
 function valoresDe(c: ConfigProjeto) {
   const v: Record<string, unknown> = {
-    'projeto.nome': c.projeto.nome, 'projeto.versao': c.projeto.versao, 'projeto.orgao': c.projeto.orgao, 'projeto.logo': c.projeto.logo ?? '',
+    'projeto.nome': c.projeto.nome, 'projeto.versao': c.projeto.versao, 'projeto.orgao': c.projeto.orgao, 'projeto.logo': c.projeto.logo ?? '', 'projeto.logo_claro': c.projeto.logo_claro ?? '', 'captura.celular': c.captura.celular, 'padroes.selo_situacao': c.padroes.selo_situacao,
     'identidade.design_system': c.identidade.design_system, 'identidade.fontes.titulo': c.identidade.fontes.titulo, 'identidade.fontes.texto': c.identidade.fontes.texto,
     'identidade.css_adicional': c.identidade.css_adicional ?? '', largura_captura: c.largura_captura,
     'padroes.listas_sempre_em_tela': c.padroes.listas_sempre_em_tela, 'padroes.paginacao': c.padroes.paginacao, 'padroes.container_max': c.padroes.container_max,
@@ -109,6 +109,49 @@ function Escolha(p: { id: string; rotulo: string; valor: unknown; opcoes: [strin
       {p.ajuda && <span class="ajuda" id={`${p.id}-ajuda`}>{p.ajuda}</span>}
     </div>
   );
+}
+
+/** Escolha de um logo dentro da pasta de especificações, com prévia (logo e logo para fundo claro, RN-88). */
+function CampoLogo(p: { id: string; chave: string; rotulo: string; valor: string; aoMudar: (v: string) => void }) {
+  const logo = p.valor;
+  return (
+    <div class="campo">
+      <span class="rotulo" id={`${p.id}-r`}>{p.rotulo}</span>
+      <div class="acoes">
+        {logo && <img src={`prumo-arquivo://specs/${logo.split('/').map(encodeURIComponent).join('/')}`} alt={`Prévia: ${p.rotulo}`} style="max-height:48px;background:var(--fundo-2);padding:4px" />}
+        <code>{logo || 'sem logo'}</code>
+        <button
+          type="button"
+          class="botao pequeno"
+          aria-describedby={`${p.id}-r`}
+          data-testid={`config-${p.id}-escolher`}
+          onClick={async () => {
+            const arq = await invocar<string | undefined>('sistema:escolherArquivo', { titulo: p.rotulo, extensoes: ['png', 'jpg', 'jpeg', 'svg'] });
+            if (!arq) return;
+            const specs = projeto.value!.specs.replace(/\\/g, '/');
+            const a = arq.replace(/\\/g, '/');
+            // Logo fora das especificações também vale (ex.: ../logo.png), relativo à pasta de especificações.
+            const rel = relativo(specs, a);
+            if (!rel) return avisar('atencao', 'Escolha um arquivo no mesmo disco das especificações.');
+            p.aoMudar(rel);
+          }}
+        >
+          Escolher…
+        </button>
+        {logo && <button type="button" class="botao pequeno" data-testid={`config-${p.id}-tirar`} onClick={() => p.aoMudar('')}>Tirar</button>}
+      </div>
+    </div>
+  );
+}
+
+/** Caminho relativo com barras normais (a janela não tem o módulo path do Node). */
+function relativo(de: string, para: string): string | undefined {
+  const a = de.split('/').filter(Boolean);
+  const b = para.split('/').filter(Boolean);
+  if (!a.length || !b.length || a[0]!.toLowerCase() !== b[0]!.toLowerCase()) return undefined;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i]!.toLowerCase() === b[i]!.toLowerCase()) i++;
+  return [...Array(a.length - i).fill('..'), ...b.slice(i)].join('/');
 }
 
 function Marca(p: { id: string; rotulo: string; valor: unknown; aoMudar: (v: boolean) => void }) {
@@ -187,7 +230,6 @@ export function Configuracao() {
 
   const set = (k: string) => (x: unknown) => setV({ ...v, [k]: x });
   const perfis = Object.keys(leitura.config.perfis);
-  const logo = String(v['projeto.logo'] ?? '');
 
   const salvar = async () => {
     setSalvando(true);
@@ -232,30 +274,8 @@ export function Configuracao() {
           <Campo id="projeto-versao" rotulo="Versão" valor={v['projeto.versao']} erro={erros['projeto.versao']} aoMudar={set('projeto.versao')} />
           <Campo id="projeto-orgao" rotulo="Órgão ou cliente" valor={v['projeto.orgao']} aoMudar={set('projeto.orgao')} />
         </div>
-        <div class="campo">
-          <span class="rotulo" id="logo-r">Logo</span>
-          <div class="acoes">
-            {logo && <img src={`prumo-arquivo://specs/${logo.split('/').map(encodeURIComponent).join('/')}`} alt="Prévia do logo" style="max-height:48px;background:var(--fundo-2);padding:4px" />}
-            <code>{logo || 'sem logo'}</code>
-            <button
-              type="button"
-              class="botao pequeno"
-              aria-describedby="logo-r"
-              data-testid="config-logo-escolher"
-              onClick={async () => {
-                const arq = await invocar<string | undefined>('sistema:escolherArquivo', { titulo: 'Logo do projeto', extensoes: ['png', 'jpg', 'jpeg', 'svg'] });
-                if (!arq) return;
-                const specs = projeto.value!.specs.replace(/\\/g, '/');
-                const a = arq.replace(/\\/g, '/');
-                if (!a.toLowerCase().startsWith(specs.toLowerCase() + '/')) return avisar('atencao', 'Escolha um arquivo dentro da pasta de especificações (copie o logo para lá).');
-                set('projeto.logo')(a.slice(specs.length + 1));
-              }}
-            >
-              Escolher…
-            </button>
-            {logo && <button type="button" class="botao pequeno" onClick={() => set('projeto.logo')('')}>Tirar logo</button>}
-          </div>
-        </div>
+        <CampoLogo id="logo" chave="projeto.logo" rotulo="Logo" valor={String(v['projeto.logo'] ?? '')} aoMudar={set('projeto.logo')} />
+        <CampoLogo id="logo-claro" chave="projeto.logo_claro" rotulo="Logo para fundo claro (cabeçalho do gov.br)" valor={String(v['projeto.logo_claro'] ?? '')} aoMudar={set('projeto.logo_claro')} />
       </fieldset>
 
       <fieldset>
@@ -306,6 +326,8 @@ export function Configuracao() {
           <Campo id="padroes-container-max" rotulo="Largura máxima (px)" tipo="number" valor={v['padroes.container_max']} aoMudar={(x) => set('padroes.container_max')(Number(x))} />
         </div>
         <Marca id="padroes-listas" rotulo="Listas sempre em tela (nunca em janela)" valor={v['padroes.listas_sempre_em_tela']} aoMudar={set('padroes.listas_sempre_em_tela')} />
+        <Marca id="captura-celular" rotulo="Também capturar em celular (390 px, <tela>-celular.png)" valor={v['captura.celular']} aoMudar={set('captura.celular')} />
+        <Marca id="padroes-selo" rotulo="Selo de situação nas colunas Situação/Status (no kit gov.br é sempre ligado)" valor={v['padroes.selo_situacao']} aoMudar={set('padroes.selo_situacao')} />
         <Campo id="cascas-conta" rotulo="Itens da conta no menu autenticado" ajuda="Separados por vírgula." valor={v['cascas.autenticada.conta_no_pe']} aoMudar={set('cascas.autenticada.conta_no_pe')} />
         <div class="campo">
           <label for="perfis">Perfis e itens de menu</label>

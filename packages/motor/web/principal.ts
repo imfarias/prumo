@@ -335,10 +335,13 @@ function ajustar(iframe: HTMLIFrameElement) {
   const moldura = iframe.parentElement!;
   const secao = iframe.closest('.prototipo')!;
   const modo = $('[data-zoom][aria-pressed="true"]', secao)?.dataset.zoom ?? 'ajustar';
+  // Largura de base: computador (1440) ou celular (390) — 0004.
+  const largura = Number($('[data-largura][aria-pressed="true"]', secao)?.dataset.largura ?? 1440);
   const h = alturas.get(iframe) ?? 900;
+  iframe.style.width = `${largura}px`;
   iframe.style.height = `${h}px`;
   if (modo === 'ajustar') {
-    const s = Math.min(1, moldura.clientWidth / 1440);
+    const s = Math.min(1, moldura.clientWidth / largura);
     iframe.style.transform = `scale(${s})`;
     moldura.style.height = `${Math.ceil(h * s)}px`;
   } else {
@@ -384,6 +387,21 @@ function iniciarPrototipos() {
         anunciar(`Estado: ${b.textContent}`);
       });
     }
+    // Simular erro (RN-84): o protótipo dentro do iframe guarda o modo; reenviado a cada página carregada.
+    const simular = $<HTMLButtonElement>('[data-simular]', secao);
+    simular?.addEventListener('click', () => {
+      const v = simular.getAttribute('aria-pressed') !== 'true';
+      simular.setAttribute('aria-pressed', String(v));
+      iframe.contentWindow?.postMessage({ prumo: 'simular', valor: v }, '*');
+      anunciar(v ? 'Simular erro ligado: as ações do protótipo mostram os erros dos cenários.' : 'Simular erro desligado.');
+    });
+    for (const b of $$<HTMLButtonElement>('[data-largura]', secao)) {
+      b.addEventListener('click', () => {
+        $$('[data-largura]', secao).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        ajustar(iframe);
+        anunciar(`Largura: ${b.textContent}`);
+      });
+    }
     for (const b of $$<HTMLButtonElement>('[data-zoom]', secao)) {
       b.addEventListener('click', () => {
         $$('[data-zoom]', secao).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
@@ -397,13 +415,18 @@ function iniciarPrototipos() {
 }
 
 window.addEventListener('message', (e) => {
-  const d = e.data as { prumo?: string; valor?: number; alvo?: string };
+  const d = e.data as { prumo?: string; valor?: number; alvo?: string; texto?: string };
   if (!d || typeof d !== 'object' || !d.prumo) return;
   const iframe = $$<HTMLIFrameElement>('.prototipo iframe').find((f) => f.contentWindow === e.source);
   if (!iframe) return;
   if (d.prumo === 'altura' && typeof d.valor === 'number') {
     alturas.set(iframe, Math.max(200, Math.min(d.valor, 20000)));
     ajustar(iframe);
+    // A página do protótipo carregou (ou mudou de tamanho): mantém o "Simular erro" escolhido.
+    const ligado = iframe.closest('.prototipo')?.querySelector('[data-simular]')?.getAttribute('aria-pressed') === 'true';
+    if (ligado) iframe.contentWindow?.postMessage({ prumo: 'simular', valor: true }, '*');
+  } else if (d.prumo === 'aviso' && typeof d.texto === 'string') {
+    anunciar(d.texto.slice(0, 200));
   } else if (d.prumo === 'navegar' && d.alvo && config.modo === 'unico') {
     const [, tela, estado] = d.alvo.split('/');
     carregarUnico(iframe, `${tela}/${estado}`);

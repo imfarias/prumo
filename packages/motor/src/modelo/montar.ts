@@ -9,6 +9,7 @@ import { acoesDaTela } from '../inferencia/acoes.js';
 import { decidirComponente } from '../inferencia/campos.js';
 import { estadosDaTela, exemplosDoFilho } from '../inferencia/estados.js';
 import { ligarFluxos } from '../inferencia/fluxo.js';
+import { CORES_SELO, type CorSelo } from '../inferencia/selo.js';
 import { mesmoTexto, normalizar, slug, textoPuro, tituloDeArquivo } from '../util/texto.js';
 import { VERSAO_MODELO } from '../versao.js';
 import {
@@ -45,6 +46,19 @@ export function classificarTabela(t: Tabela): TipoTabela {
   return 'outra';
 }
 
+/**
+ * Tabela de cenário que é conteúdo da tela (Bloco | Conteúdo, Aba | Perfis…) e vira bloco de dados no protótipo.
+ * Ficam de fora as que descrevem regra, não conteúdo: as de cenários @validacao, as com coluna "Mensagem"
+ * (já viram os estados de erro e aviso) e as que só listam campos (uma coluna "Campo"/"Campos").
+ */
+export function tabelaDeConteudo(t: Tabela, f: Filho): boolean {
+  if (f.tags.includes('@validacao')) return false;
+  const cab = t.cabecalho.map((h) => normalizar(h));
+  if (cab.some((h) => /^mensage(m|ns)$/.test(h))) return false;
+  if (cab.length === 1 && /^campos?$/.test(cab[0]!)) return false;
+  return true;
+}
+
 /** Nome do grupo: último `<Parâmetro>` do texto do passo; sem parâmetro, "Campos". */
 export function grupoDoPasso(texto: string): string {
   const todos = [...texto.matchAll(/<([^<>]{1,40})>/g)].map((m) => m[1]!.trim());
@@ -78,7 +92,7 @@ function camposDasTabelas(a: ArquivoFeature): { brutos: CampoBruto[]; dados: Tel
       const tipo = classificarTabela(t);
       const grupo = grupoDoPasso(p.texto);
       if (tipo === 'outra') {
-        if (!f.tags.includes('@prototipo')) dados.push({ titulo: grupo, cabecalho: t.cabecalho, linhas: t.linhas.map((l) => l.celulas) });
+        if (!f.tags.includes('@prototipo') && tabelaDeConteudo(t, f)) dados.push({ titulo: grupo, cabecalho: t.cabecalho, linhas: t.linhas.map((l) => l.celulas) });
         continue;
       }
       if (tipo !== 'definicao') continue;
@@ -320,6 +334,26 @@ export function montarModelo(e: EntradaModelo): { modelo: ModeloTelas; achados: 
   }
 
   ligarFluxos(telas, new Map(telasArquivos.map((a) => [a.nome, a])), achados);
+
+  // Cores de selo por coluna e valor (RN-86), validadas.
+  for (const t of telas) {
+    const selos = overrides.telas[t.id]?.selos;
+    if (!selos || typeof selos !== 'object') continue;
+    for (const [coluna, valores] of Object.entries(selos)) {
+      const col = t.colunas.find((c) => mesmoTexto(c.nome, coluna));
+      if (!col) {
+        achados.push(avisoOverride(overrides, [t.id, 'selos', coluna], `Selo para a coluna "${coluna}", que não existe na tela ${t.id}.`));
+        continue;
+      }
+      for (const [valor, cor] of Object.entries(valores ?? {})) {
+        if (!(CORES_SELO as readonly string[]).includes(String(cor))) {
+          achados.push(avisoOverride(overrides, [t.id, 'selos', coluna, valor], `Cor de selo "${cor}" inválida; use ${CORES_SELO.join(', ')}.`));
+          continue;
+        }
+        (col.selos ??= {})[valor] = cor as CorSelo;
+      }
+    }
+  }
 
   for (const id of Object.keys(overrides.telas)) {
     if (!telas.some((t) => t.id === id)) achados.push(avisoOverride(overrides, [id], `Override para a tela "${id}", que não existe.`));

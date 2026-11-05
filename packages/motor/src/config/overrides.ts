@@ -21,6 +21,8 @@ export interface OverrideTela {
   ordem?: string[];
   campos?: Record<string, OverrideCampo>;
   acoes?: { rotulo: string; primaria?: boolean; destino?: string }[];
+  /** Cor do selo por coluna e valor (RN-86): `selos: { Situação: { "Em análise": aviso } }`. */
+  selos?: Record<string, Record<string, string>>;
 }
 
 export interface Overrides {

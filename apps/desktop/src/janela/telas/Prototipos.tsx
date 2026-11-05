@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { TelaVisao } from '../../comum/tipos.js';
 import { avisar, invocar, ocupado, rodarTarefa, textoDoErro, versaoPrevia } from '../estado.js';
 
@@ -14,6 +14,11 @@ export function Prototipos() {
   const [aberta, setAberta] = useState<TelaVisao>();
   const [estado, setEstado] = useState(0);
   const [escala, setEscala] = useState(0.5);
+  // 0004: largura de celular e "Simular erro" na prévia (o protótipo dentro do iframe guarda o modo).
+  const [largura, setLargura] = useState<1440 | 390>(1440);
+  const [simular, setSimular] = useState(false);
+  const quadro = useRef<HTMLIFrameElement>(null);
+  const avisarSimular = (v: boolean) => quadro.current?.contentWindow?.postMessage({ prumo: 'simular', valor: v }, '*');
   const [ov, setOv] = useState<Override>({});
   const [ovOrig, setOvOrig] = useState<Override>({});
   const [base, setBase] = useState('');
@@ -132,11 +137,28 @@ export function Prototipos() {
                   <option value="0.4">40%</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option>
                 </select>
               </label>
+              <span role="group" aria-label="Largura" class="acoes">
+                <button type="button" class="botao pequeno" aria-pressed={largura === 1440} data-testid="prototipos-computador" onClick={() => setLargura(1440)}>Computador</button>
+                <button type="button" class="botao pequeno" aria-pressed={largura === 390} data-testid="prototipos-celular" onClick={() => setLargura(390)}>Celular</button>
+              </span>
+              <button
+                type="button"
+                class="botao pequeno"
+                aria-pressed={simular}
+                data-testid="prototipos-simular"
+                onClick={() => {
+                  setSimular(!simular);
+                  avisarSimular(!simular);
+                  avisar('ok', !simular ? 'Simular erro ligado: as ações da prévia mostram os erros dos cenários.' : 'Simular erro desligado.');
+                }}
+              >
+                Simular erro
+              </button>
               <button type="button" class="botao pequeno primario" data-testid="prototipos-gerar-tela" disabled={ocupado.value} onClick={() => gerarPng({ telas: [aberta.id] }, aberta.titulo)}>Gerar PNG desta tela</button>
               <button type="button" class="botao pequeno" onClick={() => setAberta(undefined)}>Fechar</button>
             </div>
             <div class="moldura">
-              <iframe key={`${est.url}-${versaoPrevia.value}`} src={est.url} title={`Protótipo: ${aberta.titulo} — ${est.id}`} style={`transform:scale(${escala});width:1440px;height:${Math.round(1400)}px`} data-testid="prototipos-iframe" sandbox="allow-same-origin allow-scripts" />
+              <iframe ref={quadro} key={`${est.url}-${versaoPrevia.value}`} src={est.url} title={`Protótipo: ${aberta.titulo} — ${est.id}`} style={`transform:scale(${largura === 390 ? 1 : escala});width:${largura}px;height:1400px`} data-testid="prototipos-iframe" sandbox="allow-same-origin allow-scripts" onLoad={() => simular && avisarSimular(true)} />
             </div>
           </div>
           <div>

@@ -91,9 +91,10 @@ opcoesRecorte(opcoesComuns(programa.command('capturar')))
     return n;
   })
   .option('--forcar', 'regrava os PNGs mesmo sem mudança')
+  .option('--celular', 'também captura a 390 px em <tela>-celular.png (ou captura.celular no projeto.yml)')
   .action(async (o) => {
     const r = await gerarECapturar(o.specs, {
-      projeto: o.projeto, saida: o.saida, recorte: recorte(o), largura: o.largura, forcar: o.forcar,
+      projeto: o.projeto, saida: o.saida, recorte: recorte(o), largura: o.largura, forcar: o.forcar, celular: o.celular || undefined,
       aoGravar: (c) => verboso && log(`${c.situacao === 'gravado' ? 'gravado    ' : 'sem mudança'} ${path.relative(process.cwd(), c.destino)}`),
     });
     const gravados = r.capturas.filter((c) => c.situacao === 'gravado').length;
@@ -109,8 +110,9 @@ opcoesRecorte(opcoesComuns(programa.command('capturar')))
 opcoesRecorte(opcoesComuns(programa.command('comparar-png')))
   .description('compara os PNGs atuais das features com os gerados pelo Prumo (relatório lado a lado)')
   .option('--saida <pasta>', 'pasta do relatório', path.join('saida', 'comparacao'))
+  .option('--celular', 'compara também os PNGs de celular (<tela>-celular.png)')
   .action(async (o) => {
-    const r = await compararComAtuais(o.specs, { projeto: o.projeto, saida: o.saida, recorte: recorte(o) });
+    const r = await compararComAtuais(o.specs, { projeto: o.projeto, saida: o.saida, recorte: recorte(o), celular: o.celular || undefined });
     const comRef = r.itens.filter((i) => i.diferenca !== null);
     const media = comRef.length ? Math.round((comRef.reduce((s, i) => s + i.diferenca!, 0) / comRef.length) * 100) / 100 : 0;
     console.log(`${r.itens.length} telas comparadas (${comRef.length} com PNG atual); diferença média ${media}%.`);
