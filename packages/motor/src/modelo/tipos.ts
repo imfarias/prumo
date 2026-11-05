@@ -52,6 +52,10 @@ export interface Acao {
   rotulo: string;
   primaria: boolean;
   destino?: string; // id da tela de destino
+  /** Estados que a ação produz nos cenários (RN-84). */
+  fluxo?: { sucesso?: string; erros: string[]; avisos: string[] };
+  /** Por que a ação tem destino ou fluxo. */
+  sinal?: Sinal;
   origem: Origem;
 }
 
@@ -63,10 +67,14 @@ export interface Estado {
   cenario?: { posicao: number; titulo: string };
   mensagem?: { codigo: string; texto: string; local: 'topo' | 'campo'; campo?: string };
   exemplos: Record<string, string>; // nome do campo → valor
+  /** Ação acionada no cenário que produz este estado (RN-84). */
+  acao?: string;
 }
 
 export type Layout = 'listagem' | 'formulario' | 'formulario-etapas' | 'leitura' | 'api';
 export const LAYOUTS: readonly Layout[] = ['listagem', 'formulario', 'formulario-etapas', 'leitura', 'api'];
+/** "Janela sobre o portal": não é um layout, e sim a forma de apresentar o layout inferido (override ou `# Tela:`). */
+export const ehJanela = (v: string | undefined) => !!v && /^janela([-_ ]sobre)?$/.test(v.trim().toLowerCase());
 
 export interface Tela {
   id: string; // nome da feature sem .feature
@@ -75,6 +83,8 @@ export interface Tela {
   titulo: string;
   tipo: 'Consulta' | 'Manual' | 'Integração' | null;
   layout: Layout;
+  /** Apresentada como janela sobre o portal (0004). */
+  janela?: boolean;
   casca: string;
   perfil: string | null;
   fluxo?: string;

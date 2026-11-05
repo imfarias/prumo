@@ -8,10 +8,11 @@ import type { ArquivoFeature, Filho, Tabela } from '../parser/tipos.js';
 import { acoesDaTela } from '../inferencia/acoes.js';
 import { decidirComponente } from '../inferencia/campos.js';
 import { estadosDaTela, exemplosDoFilho } from '../inferencia/estados.js';
+import { ligarFluxos } from '../inferencia/fluxo.js';
 import { mesmoTexto, normalizar, slug, textoPuro, tituloDeArquivo } from '../util/texto.js';
 import { VERSAO_MODELO } from '../versao.js';
 import {
-  COMPONENTES, LAYOUTS,
+  COMPONENTES, LAYOUTS, ehJanela,
   type Campo, type Componente, type Layout, type ModeloTelas, type RefCitada, type ReferenciaModelo, type Sinal, type Tela,
 } from './tipos.js';
 
@@ -184,11 +185,13 @@ export function montarModelo(e: EntradaModelo): { modelo: ModeloTelas; achados: 
     const ov: OverrideTela = overrides.telas[a.nome] ?? {};
     let layout = decidirLayout(a, tipo, brutos, sinais);
     if (ov.layout) {
-      if ((LAYOUTS as readonly string[]).includes(ov.layout)) {
+      if (ehJanela(ov.layout)) {
+        sinais.push({ regra: 'override', descricao: 'layout: janela sobre o portal' });
+      } else if ((LAYOUTS as readonly string[]).includes(ov.layout)) {
         layout = ov.layout as Layout;
         sinais.push({ regra: 'override', descricao: `layout: ${ov.layout}` });
       } else {
-        achados.push(avisoOverride(overrides, [a.nome, 'layout'], `Layout "${ov.layout}" desconhecido; use ${LAYOUTS.join(', ')}.`));
+        achados.push(avisoOverride(overrides, [a.nome, 'layout'], `Layout "${ov.layout}" desconhecido; use ${LAYOUTS.join(', ')} ou janela_sobre.`));
       }
     }
 
@@ -292,6 +295,7 @@ export function montarModelo(e: EntradaModelo): { modelo: ModeloTelas; achados: 
       titulo: tituloProto || tituloDeArquivo(a.titulo || a.nome),
       tipo,
       layout,
+      janela: ehJanela(ov.layout) || ehJanela(a.metadados['Tela']?.valor) || undefined,
       casca,
       perfil,
       fluxo: a.metadados['Fluxo']?.valor,
@@ -314,6 +318,8 @@ export function montarModelo(e: EntradaModelo): { modelo: ModeloTelas; achados: 
       origem: { arquivo: a.relativo, linha: a.linha },
     });
   }
+
+  ligarFluxos(telas, new Map(telasArquivos.map((a) => [a.nome, a])), achados);
 
   for (const id of Object.keys(overrides.telas)) {
     if (!telas.some((t) => t.id === id)) achados.push(avisoOverride(overrides, [id], `Override para a tela "${id}", que não existe.`));

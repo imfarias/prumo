@@ -20,7 +20,7 @@ export interface Casca {
 
 /** Forma do projeto.yml já com os padrões aplicados. */
 export interface ConfigProjeto {
-  projeto: { nome: string; versao: string; orgao: string; logo?: string };
+  projeto: { nome: string; versao: string; orgao: string; logo?: string; logo_claro?: string };
   identidade: {
     design_system: 'proprio' | 'govbr';
     cores: Record<'fundo' | 'texto' | 'primaria' | 'menu' | 'menu_texto' | 'destaque' | 'erro', string> & Record<string, string>;
@@ -28,6 +28,8 @@ export interface ConfigProjeto {
     css_adicional?: string;
   };
   largura_captura: number;
+  /** Captura também a 390 px (`<tela>-celular.png`, RN-87). */
+  captura: { celular: boolean };
   cascas: Record<string, Casca>;
   perfis: Record<string, string[]>;
   modulos: Record<string, { casca?: string; perfil?: string }>;
@@ -59,6 +61,7 @@ export function configPadrao(): ConfigProjeto {
       fontes: { titulo: 'Atkinson Hyperlegible', texto: 'Atkinson Hyperlegible' },
     },
     largura_captura: 1440,
+    captura: { celular: false },
     cascas: {
       publica: { topo: true, rodape: true },
       autenticada: { menu: true, conta_no_pe: ['Alterar Senha', 'Sair do Sistema'] },
@@ -82,7 +85,7 @@ export function configPadrao(): ConfigProjeto {
 }
 
 const CHAVES_CONHECIDAS = new Set([
-  'projeto', 'identidade', 'largura_captura', 'cascas', 'perfis', 'modulos', 'padroes', 'dados_ficticios',
+  'projeto', 'identidade', 'largura_captura', 'captura', 'cascas', 'perfis', 'modulos', 'padroes', 'dados_ficticios',
   'mascaras', 'mensagens', 'verificacao', 'referencias', 'documentacao', 'atualizacao', 'ia',
 ]);
 
@@ -118,6 +121,8 @@ export function validarConfig(bruto: unknown, arquivo: string, linhaDe: (caminho
     else aviso(['projeto', 'versao'], 'projeto.versao é obrigatório.', 'erro');
     if (typeof p.orgao === 'string') c.projeto.orgao = p.orgao;
     if (typeof p.logo === 'string' && p.logo) c.projeto.logo = p.logo;
+    if (typeof p.logo_claro === 'string' && p.logo_claro) c.projeto.logo_claro = p.logo_claro;
+    else if (p.logo_claro !== undefined && p.logo_claro !== null) aviso(['projeto', 'logo_claro'], 'projeto.logo_claro deve ser o caminho de uma imagem.');
   } else {
     aviso(['projeto'], 'Falta o bloco projeto: com nome e versao.', 'erro');
   }
@@ -143,6 +148,11 @@ export function validarConfig(bruto: unknown, arquivo: string, linhaDe: (caminho
     const n = Number(bruto.largura_captura);
     if (Number.isInteger(n) && n >= 320 && n <= 3840) c.largura_captura = n;
     else aviso(['largura_captura'], 'largura_captura deve ser um inteiro entre 320 e 3840.');
+  }
+
+  if (bruto.captura !== undefined) {
+    if (ehObjeto(bruto.captura) && (bruto.captura.celular === undefined || typeof bruto.captura.celular === 'boolean')) c.captura.celular = bruto.captura.celular === true;
+    else aviso(['captura', 'celular'], 'captura.celular deve ser true ou false.');
   }
 
   if (ehObjeto(bruto.cascas)) {
