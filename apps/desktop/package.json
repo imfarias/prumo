@@ -1,11 +1,14 @@
 {
   "name": "@prumo/desktop",
   "productName": "Prumo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Gera protótipos, documentação navegável e verificação a partir de especificações Gherkin.",
   "author": "Vinicius Farias",
   "homepage": "https://github.com/imfarias/prumo",
-  "repository": { "type": "git", "url": "https://github.com/imfarias/prumo.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imfarias/prumo.git"
+  },
   "license": "MIT",
   "private": true,
   "type": "module",
