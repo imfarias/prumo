@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { ErroPrumo } from '../util/erros.js';
@@ -13,15 +13,43 @@ interface Convertido {
   documentacao: Record<string, unknown>;
 }
 
-/** Cria o projeto.yml a partir do config.properties, com comentários explicando cada bloco (FA-05). */
+/**
+ * Nome do projeto pela pasta: ".../snbp_documentacao/3 - Requisitos/Especificações" → "SNBP".
+ * Sobe as pastas de requisitos e tira o sufixo "documentação"; sigla curta vai em maiúsculas.
+ */
+export function nomeDaPasta(specs: string): string {
+  const partes = path.resolve(specs).split(/[\\/]+/).filter(Boolean).reverse();
+  const pasta = partes.find((p) => !/^(especifica[cç](o|õ)es|\d+\s*-\s*requisitos|requisitos|doc|docs)$/i.test(p)) ?? 'Projeto';
+  const base = pasta.replace(/[-_ ]*(documenta[cç][aã]o|documentacao|docs?)$/i, '').replace(/[-_]+/g, ' ').trim() || pasta;
+  return base.length <= 6 && !/\s/.test(base) ? base.toUpperCase() : base.replace(/(^|\s)(\p{L})/gu, (_m, e: string, l: string) => e + l.toUpperCase());
+}
+
+/** Logo ao lado das especificações (na pasta, em Logo/ ou na pasta de cima), relativo às especificações. */
+export function acharLogo(specs: string): string | undefined {
+  const lugares = [specs, path.join(specs, 'Logo'), path.join(specs, 'logo'), path.dirname(specs)];
+  for (const dir of lugares) {
+    if (!existsSync(dir)) continue;
+    const achado = readdirSync(dir).find((n) => /logo/i.test(n) && /\.(png|svg|jpe?g)$/i.test(n));
+    if (achado) return path.relative(specs, path.join(dir, achado)).split(path.sep).join('/');
+  }
+  return undefined;
+}
+
+/**
+ * Cria o projeto.yml, com comentários explicando cada bloco (FA-05): a partir do config.properties do Pirilampo
+ * ou, sem ele, com a configuração padrão (nome pela pasta e logo encontrado ao lado das especificações).
+ */
 export async function migrarConfig(specs: string, opcoes: { forcar?: boolean } = {}) {
   const prop = path.join(specs, 'config.properties');
   const destino = path.join(specs, 'projeto.yml');
-  if (!existsSync(prop)) throw new ErroPrumo('CLI-01', `Não há config.properties em ${specs}.`);
+  if (!existsSync(specs)) throw new ErroPrumo('CLI-01', `A pasta ${specs} não existe.`);
   if (existsSync(destino) && !opcoes.forcar) {
     throw new ErroPrumo('MIGRAR', `Já existe ${destino}. Use --forcar para sobrescrever.`);
   }
-  const b = propertiesParaProjeto(lerProperties(await readFile(prop, 'utf8'))) as unknown as Convertido;
+  const doPirilampo = existsSync(prop);
+  const b: Convertido = doPirilampo
+    ? (propertiesParaProjeto(lerProperties(await readFile(prop, 'utf8'))) as unknown as Convertido)
+    : { projeto: { nome: nomeDaPasta(specs), versao: '1.0', logo: acharLogo(specs) }, identidade: { cores: {} }, documentacao: {} };
   const p = configPadrao();
   const cores = { ...p.identidade.cores, ...b.identidade.cores };
   const d = { ...p.documentacao, ...b.documentacao };
@@ -29,7 +57,9 @@ export async function migrarConfig(specs: string, opcoes: { forcar?: boolean } =
 
   const linhas = [
     '# Configuração do Prumo para este projeto de requisitos.',
-    '# Gerado a partir do config.properties do Pirilampo; quando os dois existem, este arquivo vale.',
+    doPirilampo
+      ? '# Gerado a partir do config.properties do Pirilampo; quando os dois existem, este arquivo vale.'
+      : '# Criado com a configuração padrão (não havia config.properties). Ajuste nome, órgão, logo e cores.',
     '',
     'projeto:',
     `  nome: ${q(b.projeto.nome)}`,
@@ -75,5 +105,5 @@ export async function migrarConfig(specs: string, opcoes: { forcar?: boolean } =
     '',
   ];
   await writeFile(destino, linhas.join('\n'), 'utf8');
-  return { caminho: destino };
+  return { caminho: destino, origem: doPirilampo ? ('config.properties' as const) : ('padrao' as const) };
 }

@@ -170,9 +170,10 @@ export function Configuracao() {
           data-testid="config-criar-projeto-yml"
           onClick={async () => {
             try {
+              const origem = projeto.value?.fonte;
               projeto.value = await invocar<ProjetoAberto>('config:criarProjetoYml');
               await carregar();
-              avisar('ok', 'projeto.yml criado a partir do config.properties.');
+              avisar('ok', origem === 'config.properties' ? 'projeto.yml criado a partir do config.properties.' : 'projeto.yml criado com a configuração padrão. Ajuste nome, órgão, logo e cores.');
             } catch (e) {
               avisar('erro', textoDoErro(e));
             }
